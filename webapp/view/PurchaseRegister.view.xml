@@ -207,92 +207,99 @@
         </f:header>
 
         <f:content>
-            <ui:Table
-                id="purchaseRegisterTable"
-                selectionMode="MultiToggle"
-                visibleRowCount="15"
-            >
+            <ui:Table id="purchaseRegisterTable" 
+                      selectionMode="MultiToggle" 
+                      visibleRowCountMode="Auto"
+                      rowActionCount="1">
+                
                 <ui:extension>
                     <Toolbar>
-                        <Title
-                            id="tableHeaderTitle"
-                            text="Purchase Register (0)"
-                            level="H2"
-                        />
-                        <ToolbarSpacer />
-                        <Button
-                            icon="sap-icon://excel-attachment"
-                            tooltip="Export"
-                            press=".onExportExcel"
-                        />
-                        <Button
-                            icon="sap-icon://action-settings"
-                            tooltip="Settings"
-                            press=".onTableSettings"
-                        />
+                        <Title id="tableHeaderTitle" text="Purchase Register (0)" level="H2"/>
+                        <ToolbarSpacer/>
+                        <Button icon="sap-icon://excel-attachment" tooltip="Export" press=".onExportExcel"/>
+                        <Button icon="sap-icon://action-settings" tooltip="Settings" press=".onTableSettings"/>
                     </Toolbar>
                 </ui:extension>
-
+                
                 <ui:columns>
-                    <ui:Column width="11rem">
-                        <Label text="Purchase Requisition No." />
-                        <ui:template>
-                            <Text text="{Pr}" />
-                        </ui:template>
-                    </ui:Column>
-                    <ui:Column width="11rem">
-                        <Label text="Purchase Requisition Item" />
-                        <ui:template>
-                            <Text text="{Pritm}" />
-                        </ui:template>
-                    </ui:Column>
-                    <ui:Column width="6rem">
-                        <Label text="PR Plant" />
-                        <ui:template>
-                            <Text text="{Prplant}" />
-                        </ui:template>
-                    </ui:Column>
-                    <ui:Column width="12rem">
-                        <Label text="PR Plant Name" />
-                        <ui:template>
-                            <Text text="{Prplantname}" />
-                        </ui:template>
-                    </ui:Column>
-                    <ui:Column width="8rem">
-                        <Label text="PR Date" />
-                        <ui:template>
-                            <Text
-                                text="{path: 'PurchaseReqnCreationDate', type: 'sap.ui.model.type.Date', formatOptions: {pattern: 'dd.MM.yyyy'}}"
-                            />
-                        </ui:template>
-                    </ui:Column>
-                    <ui:Column width="9rem">
-                        <Label text="PR release date" />
-                        <ui:template>
-                            <Text
-                                text="{path: 'Prreldt', type: 'sap.ui.model.type.Date', formatOptions: {pattern: 'dd.MM.yyyy'}}"
-                            />
-                        </ui:template>
-                    </ui:Column>
-                    <ui:Column width="6rem">
-                        <Label text="PR Qty" />
-                        <ui:template>
-                            <Text text="{RequestedQuantity}" />
-                        </ui:template>
-                    </ui:Column>
-                    <ui:Column width="15rem">
-                        <Label text="PR Item Text" />
-                        <ui:template>
-                            <Text text="{Prtext}" />
-                        </ui:template>
-                    </ui:Column>
-                    <ui:Column width="8rem">
-                        <Label text="PO No." />
-                        <ui:template>
-                            <Text text="{Po}" />
-                        </ui:template>
-                    </ui:Column>
+                    <ui:Column width="11rem"><Label text="Purchase Requisition No." /><ui:template><Text text="{Pr}" /></ui:template></ui:Column>
+                    <ui:Column width="11rem"><Label text="Purchase Requisition Item No." /><ui:template><Text text="{Pritm}" /></ui:template></ui:Column>
+                    <ui:Column width="6rem"><Label text="PR Plant" /><ui:template><Text text="{Prplant}" /></ui:template></ui:Column>
+                    <ui:Column width="12rem"><Label text="PR Plant Name" /><ui:template><Text text="{Prplantname}" /></ui:template></ui:Column>
+                    <ui:Column width="8rem"><Label text="PR Date" /><ui:template><Text text="{path: 'PurchaseReqnCreationDate', type: 'sap.ui.model.type.Date', formatOptions: {pattern: 'dd.MM.yyyy'}}" /></ui:template></ui:Column>
+                    <ui:Column width="9rem"><Label text="PR release date" /><ui:template><Text text="{path: 'Prreldt', type: 'sap.ui.model.type.Date', formatOptions: {pattern: 'dd.MM.yyyy'}}" /></ui:template></ui:Column>
+                    <ui:Column width="7rem"><Label text="PR Qty" /><ui:template><Text text="{RequestedQuantity}" /></ui:template></ui:Column>
+                    <ui:Column width="15rem"><Label text="PR Item Text" /><ui:template><Text text="{Prtext}" /></ui:template></ui:Column>
+                    
+                    <ui:Column width="9rem"><Label text="PO No." /><ui:template><Text text="{Po}" /></ui:template></ui:Column>
+                    <ui:Column width="7rem"><Label text="PO Item No." /><ui:template><Text text="{Poitm}" /></ui:template></ui:Column>
+                    <ui:Column width="10rem"><Label text="Material Code" /><ui:template><Text text="{Material}" /></ui:template></ui:Column>
+                    <ui:Column width="6rem"><Label text="PO Plant" /><ui:template><Text text="{Plant}" /></ui:template></ui:Column>
+                    <ui:Column width="12rem"><Label text="PO Plant Name" /><ui:template><Text text="{PlantName}" /></ui:template></ui:Column>
+                    <ui:Column width="15rem"><Label text="Material Description" /><ui:template><Text text="{PurchaseOrderItemText}" /></ui:template></ui:Column>
+                    <ui:Column width="15rem"><Label text="PO Item Text" /><ui:template><Text text="{Potext}" /></ui:template></ui:Column>
+                    <ui:Column width="8rem"><Label text="Vendor Code" /><ui:template><Text text="{Supplier}" /></ui:template></ui:Column>
+                    <ui:Column width="15rem"><Label text="Vendor Name" /><ui:template><Text text="{SupplierFullName}" /></ui:template></ui:Column>
+                    <ui:Column width="8rem"><Label text="PO Date" /><ui:template><Text text="{path: 'PurchaseOrderDate', type: 'sap.ui.model.type.Date', formatOptions: {pattern: 'dd.MM.yyyy'}}" /></ui:template></ui:Column>
+                    <ui:Column width="9rem"><Label text="PO Release date" /><ui:template><Text text="{path: 'Poreldate', type: 'sap.ui.model.type.Date', formatOptions: {pattern: 'dd.MM.yyyy'}}" /></ui:template></ui:Column>
+                    <ui:Column width="7rem"><Label text="PO Qty" /><ui:template><Text text="{OrderQuantity}" /></ui:template></ui:Column>
+                    <ui:Column width="5rem"><Label text="UOM" /><ui:template><Text text="{UnitOfMeasure}" /></ui:template></ui:Column>
+                    <ui:Column width="10rem"><Label text="UOM Description" /><ui:template><Text text="{UnitOfMeasureLongName}" /></ui:template></ui:Column>
+                    
+                    <ui:Column width="9rem"><Label text="GRN No." /><ui:template><Text text="{Grn}" /></ui:template></ui:Column>
+                    <ui:Column width="6rem"><Label text="GRN Year" /><ui:template><Text text="{Grnyr}" /></ui:template></ui:Column>
+                    <ui:Column width="6rem"><Label text="GRN Item" /><ui:template><Text text="{Grnitm}" /></ui:template></ui:Column>
+                    <ui:Column width="8rem"><Label text="GRN Date" /><ui:template><Text text="{path: 'PostingDate', type: 'sap.ui.model.type.Date', formatOptions: {pattern: 'dd.MM.yyyy'}}" /></ui:template></ui:Column>
+                    <ui:Column width="7rem"><Label text="GRN Qty" /><ui:template><Text text="{QuantityInEntryUnit}" /></ui:template></ui:Column>
+                    <ui:Column width="9rem"><Label text="GRN Amount" /><ui:template><Text text="{PurOrdAmountInCompanyCodeCrcy1}" /></ui:template></ui:Column>
+                    
+                    <ui:Column width="9rem"><Label text="Gate Entry No." /><ui:template><Text text="{YY1_GateEntryNumber_MMI}" /></ui:template></ui:Column>
+                    <ui:Column width="9rem"><Label text="Gate Entry Date" /><ui:template><Text text="{path: 'gateentrydate', type: 'sap.ui.model.type.Date', formatOptions: {pattern: 'dd.MM.yyyy'}}" /></ui:template></ui:Column>
+                    <ui:Column width="9rem"><Label text="Gate Entry Qty" /><ui:template><Text text="{YY1_ChallanQuantity_MMI}" /></ui:template></ui:Column>
+                    <ui:Column width="8rem"><Label text="QC Status" /><ui:template><Text text="{Qcsta}" /></ui:template></ui:Column>
+                    <ui:Column width="6rem"><Label text="BY Hand" /><ui:template><Text text="{byhand}" /></ui:template></ui:Column>
+                    <ui:Column width="10rem"><Label text="Vehicle No." /><ui:template><Text text="{YY1_VehicleNumber_MMI}" /></ui:template></ui:Column>
+                    <ui:Column width="12rem"><Label text="Transporter Name" /><ui:template><Text text="{transportername}" /></ui:template></ui:Column>
+                    <ui:Column width="10rem"><Label text="Drivers Name" /><ui:template><Text text="{drivername}" /></ui:template></ui:Column>
+                    <ui:Column width="8rem"><Label text="Tare Weight" /><ui:template><Text text="{YY1_TareWeight_MMI}" /></ui:template></ui:Column>
+                    <ui:Column width="8rem"><Label text="Unit of Weight" /><ui:template><Text text="{unitwt}" /></ui:template></ui:Column>
+                    <ui:Column width="8rem"><Label text="Gross Weight" /><ui:template><Text text="{YY1_GrossWeight_MMI}" /></ui:template></ui:Column>
+                    <ui:Column width="8rem"><Label text="Net weight" /><ui:template><Text text="{YY1_NetWeight_MMI}" /></ui:template></ui:Column>
+                    <ui:Column width="9rem"><Label text="Check-in-Date" /><ui:template><Text text="{path: 'chkindt', type: 'sap.ui.model.type.Date', formatOptions: {pattern: 'dd.MM.yyyy'}}" /></ui:template></ui:Column>
+                    <ui:Column width="8rem"><Label text="Check-In-Time" /><ui:template><Text text="{chkintm}" /></ui:template></ui:Column>
+                    <ui:Column width="9rem"><Label text="Check-out-Date" /><ui:template><Text text="{path: 'chkoutdt', type: 'sap.ui.model.type.Date', formatOptions: {pattern: 'dd.MM.yyyy'}}" /></ui:template></ui:Column>
+                    <ui:Column width="8rem"><Label text="Check-out-Time" /><ui:template><Text text="{chkouttm}" /></ui:template></ui:Column>
+                    
+                    <ui:Column width="10rem"><Label text="GL Account No." /><ui:template><Text text="{GLAccount}" /></ui:template></ui:Column>
+                    <ui:Column width="12rem"><Label text="GL Description" /><ui:template><Text text="{GLAccountLongName}" /></ui:template></ui:Column>
+                    <ui:Column width="10rem"><Label text="WBS No." /><ui:template><Text text="{wbs}" /></ui:template></ui:Column>
+                    <ui:Column width="12rem"><Label text="WBS Description" /><ui:template><Text text="{wbsdesc}" /></ui:template></ui:Column>
+                    <ui:Column width="12rem"><Label text="Invoice Posting Number" /><ui:template><Text text="{supinv}" /></ui:template></ui:Column>
+                    <ui:Column width="8rem"><Label text="Condition Type" /><ui:template><Text text="{condtype}" /></ui:template></ui:Column>
+                    <ui:Column width="10rem"><Label text="Invoice Posting Date" /><ui:template><Text text="{path: 'invpostdt', type: 'sap.ui.model.type.Date', formatOptions: {pattern: 'dd.MM.yyyy'}}" /></ui:template></ui:Column>
+                    <ui:Column width="14rem"><Label text="Vendor Invoice / Reference No." /><ui:template><Text text="{SupplierInvoiceIDByInvcgParty}" /></ui:template></ui:Column>
+                    <ui:Column width="10rem"><Label text="Vendor Invoice Date" /><ui:template><Text text="{path: 'DocumentDate', type: 'sap.ui.model.type.Date', formatOptions: {pattern: 'dd.MM.yyyy'}}" /></ui:template></ui:Column>
+                    
+                    <ui:Column width="6rem"><Label text="Tax Code" /><ui:template><Text text="{TaxCode}" /></ui:template></ui:Column>
+                    <ui:Column width="8rem"><Label text="IGST" /><ui:template><Text text="{igst}" /></ui:template></ui:Column>
+                    <ui:Column width="8rem"><Label text="CGST" /><ui:template><Text text="{cgst}" /></ui:template></ui:Column>
+                    <ui:Column width="8rem"><Label text="SGST" /><ui:template><Text text="{sgst}" /></ui:template></ui:Column>
+                    <ui:Column width="8rem"><Label text="GST Amount" /><ui:template><Text text="{gst}" /></ui:template></ui:Column>
+                    
+                    <ui:Column width="9rem"><Label text="Invoice Amount" /><ui:template><Text text="{PurOrdAmountInCompanyCodeCrcy}" /></ui:template></ui:Column>
+                    <ui:Column width="9rem"><Label text="Payment Terms" /><ui:template><Text text="{PaymentTerms}" /></ui:template></ui:Column>
+                    <ui:Column width="10rem"><Label text="Payment Due Date" /><ui:template><Text text="{path: 'DueCalculationBaseDate', type: 'sap.ui.model.type.Date', formatOptions: {pattern: 'dd.MM.yyyy'}}" /></ui:template></ui:Column>
+
                 </ui:columns>
+
+                <!-- <ui:rowActionTemplate>
+                    <ui:RowAction>
+                        <ui:items>
+                            <ui:RowActionItem type="Navigation" press=".onRowNavigate"/>
+                        </ui:items>
+                    </ui:RowAction>
+                </ui:rowActionTemplate> -->
+
             </ui:Table>
         </f:content>
     </f:DynamicPage>

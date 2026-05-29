@@ -41,7 +41,7 @@ sap.ui.define([
                             }
                         );
                     });
-                    
+
                     // Converts manually typed text into a standard Token with the 'x' remove icon
                     var aMultiInputIds = ["filterPr", "filterPrDate", "filterPo", "filterMaterial", "filterPlant", "filterGateEntry"];
 
@@ -112,11 +112,22 @@ sap.ui.define([
             var sDateFrom = oDateFromInput.getValue();
             var sDateTo = oDateToInput.getValue();
 
-            if (!sDateFrom || !sDateTo) {
-                MessageBox.error("'From PO Date' and 'To PO Date' are mandatory parameters.", { title: "Missing Parameters" });
+            // 2. Dynamic check for empty fields
+            if (!sDateFrom && !sDateTo) {
+                // Both are empty
+                MessageBox.error("Both 'From PO Date' and 'To PO Date' are mandatory parameters.", { title: "Missing Parameters" });
+                return false;
+            } else if (!sDateFrom) {
+                // Only 'From PO Date' is empty
+                MessageBox.error("'From PO Date' is a mandatory parameter.", { title: "Missing Parameter" });
+                return false;
+            } else if (!sDateTo) {
+                // Only 'To PO Date' is empty
+                MessageBox.error("'To PO Date' is a mandatory parameter.", { title: "Missing Parameter" });
                 return false;
             }
 
+            // 3. Logic validation (From Date cannot be after To Date)
             var oDateFrom = oDateFromInput.getDateValue();
             var oDateTo = oDateToInput.getDateValue();
 

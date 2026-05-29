@@ -36,6 +36,8 @@
                     search=".onSearch"
                     showClearOnFB="true"
                     useToolbar="false"
+                    clear=".onClear"
+                    filterChange=".onFilterChange"
                 >
                     <fb:filterGroupItems>
                         <fb:FilterGroupItem

@@ -44,32 +44,32 @@ sap.ui.define([
         },
 
         /**
-         * Separate validation function for cleaner search logic
-         * @returns {boolean} true if valid, false if invalid
-         */
+          * Fired whenever ANY input field in the FilterBar is changed by the user.
+          * Sets the table to a "dirty" blurred state (Standard Fiori behavior).
+          */
+        onFilterChange: function () {
+            var oTable = this.byId("purchaseRegisterTable");
+            if (oTable) {
+                oTable.setShowOverlay(true);
+            }
+        },
+
         _validateSearchInputs: function () {
             var oDateFromInput = this.byId("filterPoDateFrom");
             var oDateToInput = this.byId("filterPoDateTo");
-
             var sDateFrom = oDateFromInput.getValue();
             var sDateTo = oDateToInput.getValue();
 
-            // 1. Check for empty values
             if (!sDateFrom || !sDateTo) {
-                MessageBox.warning("Both 'From PO Date' and 'To PO Date' are mandatory parameters. Please provide valid dates.", {
-                    title: "Missing Parameters"
-                });
+                MessageBox.warning("Both 'From PO Date' and 'To PO Date' are mandatory parameters.", { title: "Missing Parameters" });
                 return false;
             }
 
-            // 2. Validate date logic (From Date should not be after To Date)
             var oDateFrom = oDateFromInput.getDateValue();
             var oDateTo = oDateToInput.getDateValue();
 
             if (oDateFrom && oDateTo && oDateFrom > oDateTo) {
-                MessageBox.error("'From PO Date' cannot be after 'To PO Date'. Please correct the date range.", {
-                    title: "Invalid Date Range"
-                });
+                MessageBox.error("'From PO Date' cannot be after 'To PO Date'.", { title: "Invalid Date Range" });
                 return false;
             }
 
@@ -80,61 +80,70 @@ sap.ui.define([
             var oTable = this.byId("purchaseRegisterTable");
             var that = this;
 
-            // Trigger extracted validation logic
             if (!this._validateSearchInputs()) {
-                return; // Stop execution if validation fails
+                return;
             }
 
-            // Get validated string values for the OData path
+            // Remove the blur from the table because the user clicked Go
+            oTable.setShowOverlay(false);
+
             var sDateFrom = this.byId("filterPoDateFrom").getValue();
             var sDateTo = this.byId("filterPoDateTo").getValue();
-
-            // Build the parameterized OData Path
             var sBindPath = "/ZC_PURCHASE_REG(P_PODateFrom=" + sDateFrom + ",P_PODateTo=" + sDateTo + ")/Set";
 
-            // Gather filters from all MultiInputs
             var aFilters = [];
-            var extractFilters = function (sControlId, sFilterField) {
+
+            // Updated extractor to handle UI Date formats (dd.MM.yyyy) -> Backend formats (yyyy-MM-dd)
+            var extractFilters = function (sControlId, sFilterField, isDateField) {
                 var oInput = that.byId(sControlId);
                 if (oInput) {
                     var aTokens = oInput.getTokens();
+
+                    var formatVal = function (v) {
+                        if (isDateField && v) {
+                            if (v instanceof Date) {
+                                return DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" }).format(v);
+                            }
+                            // If it's a string token like "29.05.2026", parse it and convert it
+                            var d = DateFormat.getDateInstance({ pattern: "dd.MM.yyyy" }).parse(v);
+                            if (d) return DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" }).format(d);
+                        }
+                        return v;
+                    };
+
                     aTokens.forEach(function (oToken) {
                         var oRange = oToken.data("range");
                         if (oRange) {
                             aFilters.push(new Filter({
                                 path: sFilterField,
                                 operator: oRange.operation,
-                                value1: oRange.value1,
-                                value2: oRange.value2
+                                value1: formatVal(oRange.value1),
+                                value2: formatVal(oRange.value2)
                             }));
                         } else {
-                            aFilters.push(new Filter(sFilterField, FilterOperator.EQ, oToken.getKey()));
+                            aFilters.push(new Filter(sFilterField, FilterOperator.EQ, formatVal(oToken.getKey())));
                         }
                     });
                 }
             };
 
-            // Apply extraction mapped to the property names in metadata
-            extractFilters("filterPr", "Pr");
-            extractFilters("filterPrDate", "PurchaseReqnCreationDate");
-            extractFilters("filterPo", "Po");
-            extractFilters("filterMaterial", "Material");
-            extractFilters("filterPlant", "Plant");
-            extractFilters("filterGateEntry", "YY1_GateEntryNumber_MMI");
+            // Pass 'true' as the third parameter for Date fields so they are converted properly
+            extractFilters("filterPr", "Pr", false);
+            extractFilters("filterPrDate", "PurchaseReqnCreationDate", true); // <--- Flagged as Date
+            extractFilters("filterPo", "Po", false);
+            extractFilters("filterMaterial", "Material", false);
+            extractFilters("filterPlant", "Plant", false);
+            extractFilters("filterGateEntry", "YY1_GateEntryNumber_MMI", false);
 
-            // Setup the UI Table binding with built-in error handling
             oTable.bindRows({
                 path: sBindPath,
-                parameters: {
-                    $count: true
-                },
+                parameters: { $count: true },
                 filters: aFilters,
                 events: {
                     dataReceived: function (oDataEvent) {
-                        // OData V4 table bindings pass an "error" parameter on failure
                         var oError = oDataEvent.getParameter("error");
                         if (oError) {
-                            MessageBox.error("An error occurred while fetching the Purchase Register data.", {
+                            MessageBox.error("An error occurred while fetching the data.", {
                                 title: "Data Retrieval Failed",
                                 details: oError.message || oError.toString(),
                                 styleClass: "sapUiSizeCompact"
@@ -142,14 +151,34 @@ sap.ui.define([
                             that.byId("tableHeaderTitle").setText("Purchase Register (Error)");
                             return;
                         }
-
-                        // Success scenario: update header count
                         var oBinding = oDataEvent.getSource();
                         var iCount = oBinding.getLength() || 0;
                         that.byId("tableHeaderTitle").setText("Purchase Register (" + iCount + ")");
                     }
                 }
             });
+        },
+
+        onClear: function (oEvent) {
+            var that = this;
+
+            var oDateFrom = this.byId("filterPoDateFrom");
+            var oDateTo = this.byId("filterPoDateTo");
+            if (oDateFrom) oDateFrom.setValue(null);
+            if (oDateTo) oDateTo.setValue(null);
+
+            var aMultiInputIds = ["filterPr", "filterPrDate", "filterPo", "filterMaterial", "filterPlant", "filterGateEntry"];
+            aMultiInputIds.forEach(function (sId) {
+                var oMultiInput = that.byId(sId);
+                if (oMultiInput) {
+                    oMultiInput.setValue("");
+                    oMultiInput.setTokens([]);
+                }
+            });
+
+            // Blur table on clear as well, prompting user to click Go
+            var oTable = this.byId("purchaseRegisterTable");
+            if (oTable) oTable.setShowOverlay(true);
         },
 
         onValueHelpRequest: function (oEvent) {
@@ -176,6 +205,9 @@ sap.ui.define([
                         var aTokens = oControlEvent.getParameter("tokens");
                         oMultiInput.setTokens(aTokens);
                         oValueHelpDialog.close();
+
+                        // Fire the filter change overlay manually for value helps
+                        that.onFilterChange();
                     },
                     cancel: function () {
                         oValueHelpDialog.close();
@@ -188,8 +220,7 @@ sap.ui.define([
                 var oTypeInstance;
                 if (sFieldType === "date") {
                     oTypeInstance = new TypeDate({
-                        pattern: "yyyy-MM-dd",
-                        UTC: true
+                        pattern: "dd.MM.yyyy" // Changed from yyyy-MM-dd to the UI standard
                     });
                 } else {
                     oTypeInstance = new TypeString();
@@ -203,7 +234,6 @@ sap.ui.define([
                 }]);
 
                 oValueHelpDialog.setTokens(oMultiInput.getTokens());
-
                 that.getView().addDependent(oValueHelpDialog);
                 oValueHelpDialog.open();
             });

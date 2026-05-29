@@ -42,6 +42,42 @@
                     <fb:filterGroupItems>
                         <fb:FilterGroupItem
                             groupName="G1"
+                            name="PoDateFrom"
+                            label="From PO Date"
+                            visibleInFilterBar="true"
+                            mandatory="true"
+                        >
+                            <fb:control>
+                                <DatePicker
+                                    id="filterPoDateFrom"
+                                    valueFormat="yyyy-MM-dd"
+                                    displayFormat="dd.MM.yyyy"
+                                    tooltip="Select Start Date for Purchase Order"
+                                    change=".onDateChange"
+                                />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem
+                            groupName="G1"
+                            name="PoDateTo"
+                            label="To PO Date"
+                            visibleInFilterBar="true"
+                            mandatory="true"
+                        >
+                            <fb:control>
+                                <DatePicker
+                                    id="filterPoDateTo"
+                                    valueFormat="yyyy-MM-dd"
+                                    displayFormat="dd.MM.yyyy"
+                                    tooltip="Select End Date for Purchase Order"
+                                    change=".onDateChange"
+                                />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem
+                            groupName="G1"
                             name="Pr"
                             label="Purchase Requisition No."
                             visibleInFilterBar="true"
@@ -152,42 +188,6 @@
                                         />
                                     </customData>
                                 </MultiInput>
-                            </fb:control>
-                        </fb:FilterGroupItem>
-
-                        <fb:FilterGroupItem
-                            groupName="G1"
-                            name="PoDateFrom"
-                            label="From PO Date"
-                            visibleInFilterBar="true"
-                            mandatory="true"
-                        >
-                            <fb:control>
-                                <DatePicker
-                                    id="filterPoDateFrom"
-                                    valueFormat="yyyy-MM-dd"
-                                    displayFormat="dd.MM.yyyy"
-                                    tooltip="Select Start Date for Purchase Order"
-                                    change=".onDateChange"
-                                />
-                            </fb:control>
-                        </fb:FilterGroupItem>
-
-                        <fb:FilterGroupItem
-                            groupName="G1"
-                            name="PoDateTo"
-                            label="To PO Date"
-                            visibleInFilterBar="true"
-                            mandatory="true"
-                        >
-                            <fb:control>
-                                <DatePicker
-                                    id="filterPoDateTo"
-                                    valueFormat="yyyy-MM-dd"
-                                    displayFormat="dd.MM.yyyy"
-                                    tooltip="Select End Date for Purchase Order"
-                                    change=".onDateChange"
-                                />
                             </fb:control>
                         </fb:FilterGroupItem>
 

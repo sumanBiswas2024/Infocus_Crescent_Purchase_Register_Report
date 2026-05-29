@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://sap.github.io/ui5-tooling/schema/ui5.yaml.json
+
+specVersion: "4.0"
+metadata:
+  name: purchaseregisterreport
+type: application
+builder:
+  resources:
+    excludes:
+      - /test/**
+      - /localService/**
+  customTasks:
+    - name: deploy-to-abap
+      afterTask: generateCachebusterInfo
+      configuration:
+        target:
+          destination: BAS_Crescent_Dev
+          url: https://my418443.s4hana.cloud.sap
+          authenticationType: reentranceTicket # SAML support for vscode
+        app:
+          name: ZREPO_PUR_REG
+          description: Purchase Register Report Deployment
+          package: ZPKG_MM_PURREG
+          transport: NRTK907013
+        exclude:
+          - /test/

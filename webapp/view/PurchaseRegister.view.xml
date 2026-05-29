@@ -1,6 +1,299 @@
-<mvc:View controllerName="purchaseregisterreport.controller.PurchaseRegister"
+<!-- <mvc:View controllerName="purchaseregisterreport.controller.PurchaseRegister"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m">
     <Page id="page" title="{i18n>title}">
     </Page>
+</mvc:View> -->
+<mvc:View
+    controllerName="purchaseregisterreport.controller.PurchaseRegister"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:fb="sap.ui.comp.filterbar"
+    xmlns:ui="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+    <f:DynamicPage
+        id="dynamicPageId"
+        headerExpanded="true"
+        showFooter="false"
+    >
+        <f:title>
+            <f:DynamicPageTitle>
+                <f:heading>
+                    <Title
+                        text="Standard"
+                        level="H2"
+                    />
+                </f:heading>
+            </f:DynamicPageTitle>
+        </f:title>
+
+        <f:header>
+            <f:DynamicPageHeader pinnable="true">
+                <fb:FilterBar
+                    id="filterBar"
+                    search=".onSearch"
+                    showClearOnFB="true"
+                    useToolbar="false"
+                >
+                    <fb:filterGroupItems>
+                        <fb:FilterGroupItem
+                            groupName="G1"
+                            name="Pr"
+                            label="Purchase Requisition No."
+                            visibleInFilterBar="true"
+                        >
+                            <fb:control>
+                                <MultiInput
+                                    id="filterPr"
+                                    showValueHelp="true"
+                                    valueHelpRequest=".onValueHelpRequest"
+                                >
+                                    <customData>
+                                        <core:CustomData
+                                            key="type"
+                                            value="string"
+                                        />
+                                    </customData>
+                                </MultiInput>
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem
+                            groupName="G1"
+                            name="PrDate"
+                            label="PR Date"
+                            visibleInFilterBar="true"
+                        >
+                            <fb:control>
+                                <MultiInput
+                                    id="filterPrDate"
+                                    showValueHelp="true"
+                                    valueHelpRequest=".onValueHelpRequest"
+                                >
+                                    <customData>
+                                        <core:CustomData
+                                            key="type"
+                                            value="date"
+                                        />
+                                    </customData>
+                                </MultiInput>
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem
+                            groupName="G1"
+                            name="Po"
+                            label="PO No."
+                            visibleInFilterBar="true"
+                        >
+                            <fb:control>
+                                <MultiInput
+                                    id="filterPo"
+                                    showValueHelp="true"
+                                    valueHelpRequest=".onValueHelpRequest"
+                                >
+                                    <customData>
+                                        <core:CustomData
+                                            key="type"
+                                            value="string"
+                                        />
+                                    </customData>
+                                </MultiInput>
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem
+                            groupName="G1"
+                            name="Material"
+                            label="Material Code"
+                            visibleInFilterBar="true"
+                        >
+                            <fb:control>
+                                <MultiInput
+                                    id="filterMaterial"
+                                    showValueHelp="true"
+                                    valueHelpRequest=".onValueHelpRequest"
+                                >
+                                    <customData>
+                                        <core:CustomData
+                                            key="type"
+                                            value="string"
+                                        />
+                                    </customData>
+                                </MultiInput>
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem
+                            groupName="G1"
+                            name="Plant"
+                            label="PO Plant"
+                            visibleInFilterBar="true"
+                        >
+                            <fb:control>
+                                <MultiInput
+                                    id="filterPlant"
+                                    showValueHelp="true"
+                                    valueHelpRequest=".onValueHelpRequest"
+                                >
+                                    <customData>
+                                        <core:CustomData
+                                            key="type"
+                                            value="string"
+                                        />
+                                    </customData>
+                                </MultiInput>
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem
+                            groupName="G1"
+                            name="PoDateFrom"
+                            label="From PO Date"
+                            visibleInFilterBar="true"
+                            mandatory="true"
+                        >
+                            <fb:control>
+                                <DatePicker
+                                    id="filterPoDateFrom"
+                                    valueFormat="yyyy-MM-dd"
+                                    displayFormat="dd.MM.yyyy"
+                                />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem
+                            groupName="G1"
+                            name="PoDateTo"
+                            label="To PO Date"
+                            visibleInFilterBar="true"
+                            mandatory="true"
+                        >
+                            <fb:control>
+                                <DatePicker
+                                    id="filterPoDateTo"
+                                    valueFormat="yyyy-MM-dd"
+                                    displayFormat="dd.MM.yyyy"
+                                />
+                            </fb:control>
+                        </fb:FilterGroupItem>
+
+                        <fb:FilterGroupItem
+                            groupName="G1"
+                            name="GateEntry"
+                            label="Gate Entry No."
+                            visibleInFilterBar="true"
+                        >
+                            <fb:control>
+                                <MultiInput
+                                    id="filterGateEntry"
+                                    showValueHelp="true"
+                                    valueHelpRequest=".onValueHelpRequest"
+                                >
+                                    <customData>
+                                        <core:CustomData
+                                            key="type"
+                                            value="string"
+                                        />
+                                    </customData>
+                                </MultiInput>
+                            </fb:control>
+                        </fb:FilterGroupItem>
+                    </fb:filterGroupItems>
+                </fb:FilterBar>
+            </f:DynamicPageHeader>
+        </f:header>
+
+        <f:content>
+            <ui:Table
+                id="purchaseRegisterTable"
+                selectionMode="MultiToggle"
+                visibleRowCount="15"
+            >
+                <ui:extension>
+                    <Toolbar>
+                        <Title
+                            id="tableHeaderTitle"
+                            text="Purchase Register (0)"
+                            level="H2"
+                        />
+                        <ToolbarSpacer />
+                        <Button
+                            icon="sap-icon://excel-attachment"
+                            tooltip="Export"
+                            press=".onExportExcel"
+                        />
+                        <Button
+                            icon="sap-icon://action-settings"
+                            tooltip="Settings"
+                            press=".onTableSettings"
+                        />
+                    </Toolbar>
+                </ui:extension>
+
+                <ui:columns>
+                    <ui:Column width="11rem">
+                        <Label text="Purchase Requisition No." />
+                        <ui:template>
+                            <Text text="{Pr}" />
+                        </ui:template>
+                    </ui:Column>
+                    <ui:Column width="11rem">
+                        <Label text="Purchase Requisition Item" />
+                        <ui:template>
+                            <Text text="{Pritm}" />
+                        </ui:template>
+                    </ui:Column>
+                    <ui:Column width="6rem">
+                        <Label text="PR Plant" />
+                        <ui:template>
+                            <Text text="{Prplant}" />
+                        </ui:template>
+                    </ui:Column>
+                    <ui:Column width="12rem">
+                        <Label text="PR Plant Name" />
+                        <ui:template>
+                            <Text text="{Prplantname}" />
+                        </ui:template>
+                    </ui:Column>
+                    <ui:Column width="8rem">
+                        <Label text="PR Date" />
+                        <ui:template>
+                            <Text
+                                text="{path: 'PurchaseReqnCreationDate', type: 'sap.ui.model.type.Date', formatOptions: {pattern: 'dd.MM.yyyy'}}"
+                            />
+                        </ui:template>
+                    </ui:Column>
+                    <ui:Column width="9rem">
+                        <Label text="PR release date" />
+                        <ui:template>
+                            <Text
+                                text="{path: 'Prreldt', type: 'sap.ui.model.type.Date', formatOptions: {pattern: 'dd.MM.yyyy'}}"
+                            />
+                        </ui:template>
+                    </ui:Column>
+                    <ui:Column width="6rem">
+                        <Label text="PR Qty" />
+                        <ui:template>
+                            <Text text="{RequestedQuantity}" />
+                        </ui:template>
+                    </ui:Column>
+                    <ui:Column width="15rem">
+                        <Label text="PR Item Text" />
+                        <ui:template>
+                            <Text text="{Prtext}" />
+                        </ui:template>
+                    </ui:Column>
+                    <ui:Column width="8rem">
+                        <Label text="PO No." />
+                        <ui:template>
+                            <Text text="{Po}" />
+                        </ui:template>
+                    </ui:Column>
+                </ui:columns>
+            </ui:Table>
+        </f:content>
+    </f:DynamicPage>
 </mvc:View>

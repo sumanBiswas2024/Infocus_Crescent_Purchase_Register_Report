@@ -79,7 +79,7 @@
                         <fb:FilterGroupItem
                             groupName="G1"
                             name="Pr"
-                            label="Purchase Requisition No."
+                            label="Purchase Requisition No"
                             visibleInFilterBar="true"
                         >
                             <fb:control>
@@ -125,7 +125,7 @@
                         <fb:FilterGroupItem
                             groupName="G1"
                             name="Po"
-                            label="PO No."
+                            label="PO No"
                             visibleInFilterBar="true"
                         >
                             <fb:control>
@@ -194,7 +194,7 @@
                         <fb:FilterGroupItem
                             groupName="G1"
                             name="GateEntry"
-                            label="Gate Entry No."
+                            label="Gate Entry No"
                             visibleInFilterBar="true"
                         >
                             <fb:control>

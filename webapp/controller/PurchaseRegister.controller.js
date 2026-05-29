@@ -293,7 +293,8 @@ sap.ui.define([
             ], function (ValueHelpDialog, TypeString, TypeDate) {
 
                 var oValueHelpDialog = new ValueHelpDialog({
-                    title: "Define Conditions: " + sTitle,
+                    // title: "Define Conditions: " + sTitle,
+                    title: sTitle,
                     supportMultiselect: true,
                     supportRanges: true,
                     supportRangesOnly: true,

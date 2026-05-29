@@ -15,8 +15,9 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "sap/m/MessageBox"
-], function (Controller, Filter, FilterOperator, MessageBox) {
+    "sap/m/MessageBox",
+    "sap/ui/core/format/DateFormat"
+], function (Controller, Filter, FilterOperator, MessageBox, DateFormat) {
     "use strict";
 
     return Controller.extend("purchaseregisterreport.controller.PurchaseRegister", {
@@ -61,7 +62,7 @@ sap.ui.define([
             var sDateTo = oDateToInput.getValue();
 
             if (!sDateFrom || !sDateTo) {
-                MessageBox.warning("Both 'From PO Date' and 'To PO Date' are mandatory parameters.", { title: "Missing Parameters" });
+                MessageBox.error("'From PO Date' and 'To PO Date' are mandatory parameters.", { title: "Missing Parameters" });
                 return false;
             }
 

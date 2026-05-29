@@ -219,12 +219,19 @@ sap.ui.define([
             extractFilters("filterPlant", "Plant", false);
             extractFilters("filterGateEntry", "YY1_GateEntryNumber_MMI", false);
 
+            // 1. Turn ON the busy indicator before calling the backend
+            oTable.setBusyIndicatorDelay(0); // Show spinner immediately without delay
+            oTable.setBusy(true);
+
             oTable.bindRows({
                 path: sBindPath,
                 parameters: { $count: true },
                 filters: aFilters,
                 events: {
                     dataReceived: function (oDataEvent) {
+                        // 2. Turn OFF the busy indicator when data/error arrives
+                        oTable.setBusy(false);
+
                         var oError = oDataEvent.getParameter("error");
                         if (oError) {
                             MessageBox.error("An error occurred while fetching the data.", {
@@ -238,6 +245,14 @@ sap.ui.define([
                         var oBinding = oDataEvent.getSource();
                         var iCount = oBinding.getLength() || 0;
                         that.byId("tableHeaderTitle").setText("Purchase Register (" + iCount + ")");
+
+                        // 3. No Data Validation Check
+                        if (iCount === 0) {
+                            MessageBox.information("No records found for the selected criteria.", {
+                                title: "No Data Found",
+                                styleClass: "sapUiSizeCompact"
+                            });
+                        }
                     }
                 }
             });

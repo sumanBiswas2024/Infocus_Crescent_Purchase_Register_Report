@@ -16,8 +16,9 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/m/MessageBox",
-    "sap/ui/core/format/DateFormat"
-], function (Controller, Filter, FilterOperator, MessageBox, DateFormat) {
+    "sap/ui/core/format/DateFormat",
+    "sap/m/Token"
+], function (Controller, Filter, FilterOperator, MessageBox, DateFormat, Token) {
     "use strict";
 
     return Controller.extend("purchaseregisterreport.controller.PurchaseRegister", {
@@ -40,6 +41,28 @@ sap.ui.define([
                             }
                         );
                     });
+                    
+                    // Converts manually typed text into a standard Token with the 'x' remove icon
+                    var aMultiInputIds = ["filterPr", "filterPrDate", "filterPo", "filterMaterial", "filterPlant", "filterGateEntry"];
+
+                    aMultiInputIds.forEach(function (sId) {
+                        var oMultiInput = that.byId(sId);
+                        if (oMultiInput) {
+                            oMultiInput.addValidator(function (args) {
+                                var sText = args.text;
+
+                                // Blur the table since the filter changed
+                                that.onFilterChange();
+
+                                // Creates the token looking exactly like standard Fiori (e.g., "=11111")
+                                return new Token({
+                                    key: sText,
+                                    text: "=" + sText
+                                });
+                            });
+                        }
+                    });
+                    // ============================
                 }
             });
         },
@@ -54,10 +77,38 @@ sap.ui.define([
                 oTable.setShowOverlay(true);
             }
         },
+        /**
+         * Validates manually typed dates in the DatePickers
+         */
+        onDateChange: function (oEvent) {
+            var oDatePicker = oEvent.getSource();
+            var bValid = oEvent.getParameter("valid"); // SAPUI5 natively checks if it matches displayFormat
+            var sValue = oEvent.getParameter("value");
+
+            if (sValue !== "" && !bValid) {
+                // If the user typed something invalid (e.g. "32.13.2026" or "abc")
+                oDatePicker.setValueState("Error");
+                oDatePicker.setValueStateText("Invalid Date Format. Please use DD.MM.YYYY");
+            } else {
+                // Clear the error state if valid
+                oDatePicker.setValueState("None");
+                oDatePicker.setValueStateText("");
+            }
+
+            // Also trigger the table blur
+            this.onFilterChange();
+        },
 
         _validateSearchInputs: function () {
             var oDateFromInput = this.byId("filterPoDateFrom");
             var oDateToInput = this.byId("filterPoDateTo");
+
+            // 1. Block the search if the DatePickers are currently in an Error state
+            if (oDateFromInput.getValueState() === "Error" || oDateToInput.getValueState() === "Error") {
+                MessageBox.error("Please fix the invalid date formats(DD.MM.YYYY) before searching.", { title: "Validation Error" });
+                return false;
+            }
+
             var sDateFrom = oDateFromInput.getValue();
             var sDateTo = oDateToInput.getValue();
 
@@ -99,6 +150,7 @@ sap.ui.define([
                 var oInput = that.byId(sControlId);
                 if (oInput) {
                     var aTokens = oInput.getTokens();
+                    var sManualText = oInput.getValue(); // Catch manually typed text that wasn't tokenized
 
                     var formatVal = function (v) {
                         if (isDateField && v) {
@@ -112,6 +164,20 @@ sap.ui.define([
                         return v;
                     };
 
+                    // aTokens.forEach(function (oToken) {
+                    //     var oRange = oToken.data("range");
+                    //     if (oRange) {
+                    //         aFilters.push(new Filter({
+                    //             path: sFilterField,
+                    //             operator: oRange.operation,
+                    //             value1: formatVal(oRange.value1),
+                    //             value2: formatVal(oRange.value2)
+                    //         }));
+                    //     } else {
+                    //         aFilters.push(new Filter(sFilterField, FilterOperator.EQ, formatVal(oToken.getKey())));
+                    //     }
+                    // });
+                    // 1. Process standard Tokens (from Value Help or pressing Enter)
                     aTokens.forEach(function (oToken) {
                         var oRange = oToken.data("range");
                         if (oRange) {
@@ -125,6 +191,12 @@ sap.ui.define([
                             aFilters.push(new Filter(sFilterField, FilterOperator.EQ, formatVal(oToken.getKey())));
                         }
                     });
+
+                    // 2. Process lingering manual text as an "Equal To" filter
+                    // This ensures typing "29.05.2026" in PR Date manually still works perfectly when they hit Go
+                    if (sManualText) {
+                        aFilters.push(new Filter(sFilterField, FilterOperator.EQ, formatVal(sManualText)));
+                    }
                 }
             };
 
@@ -217,6 +289,24 @@ sap.ui.define([
                         oValueHelpDialog.destroy();
                     }
                 });
+
+                // ====== ADD THIS NEW BLOCK HERE ======
+                // If it is a string field, force "EQ" (equal to) to be the first/default operation, 
+                // followed by the rest of the standard string operations.
+                if (sFieldType === "string") {
+                    oValueHelpDialog.setIncludeRangeOperations([
+                        FilterOperator.EQ,
+                        FilterOperator.Contains,
+                        FilterOperator.BT,
+                        FilterOperator.StartsWith,
+                        FilterOperator.EndsWith,
+                        FilterOperator.LT,
+                        FilterOperator.LE,
+                        FilterOperator.GT,
+                        FilterOperator.GE
+                    ], "string");
+                }
+                // =====================================
 
                 var oTypeInstance;
                 if (sFieldType === "date") {

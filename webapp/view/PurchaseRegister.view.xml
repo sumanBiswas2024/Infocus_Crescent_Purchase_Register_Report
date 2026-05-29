@@ -168,6 +168,7 @@
                                     valueFormat="yyyy-MM-dd"
                                     displayFormat="dd.MM.yyyy"
                                     tooltip="Select Start Date for Purchase Order"
+                                    change=".onDateChange"
                                 />
                             </fb:control>
                         </fb:FilterGroupItem>
@@ -185,6 +186,7 @@
                                     valueFormat="yyyy-MM-dd"
                                     displayFormat="dd.MM.yyyy"
                                     tooltip="Select End Date for Purchase Order"
+                                    change=".onDateChange"
                                 />
                             </fb:control>
                         </fb:FilterGroupItem>

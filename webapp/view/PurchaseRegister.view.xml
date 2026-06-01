@@ -17,6 +17,7 @@
         id="dynamicPageId"
         headerExpanded="true"
         showFooter="false"
+        
     >
         <f:title>
             <f:DynamicPageTitle>
@@ -246,7 +247,7 @@
                     </Toolbar>
                 </ui:extension>
 
-                <ui:columns>
+               <!-- <ui:columns>
                     <ui:Column width="11rem">
                         <Label
                             text="Purchase Requisition No."
@@ -257,7 +258,7 @@
                         </ui:template>
                     </ui:Column>
                     
-                </ui:columns>
+                </ui:columns>-->
 
                 <!-- <ui:rowActionTemplate>
                     <ui:RowAction>

@@ -17,14 +17,18 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/m/MessageBox",
     "sap/ui/core/format/DateFormat",
-    "sap/m/Token"
-], function (Controller, Filter, FilterOperator, MessageBox, DateFormat, Token) {
+    "sap/m/Token",
+    "sap/ui/table/Column",
+    "sap/m/Label",
+    "sap/m/Text"
+], function (Controller, Filter, FilterOperator, MessageBox, DateFormat, Token, Column, Label, Text) {
     "use strict";
 
     return Controller.extend("purchaseregisterreport.controller.PurchaseRegister", {
 
         onInit: function () {
             var that = this;
+            this._createTableColumns();
 
             // Wait for the view to render/initialize to safely grab the component model
             this.getView().attachEventOnce("modelContextChange", function () {
@@ -138,7 +142,103 @@ sap.ui.define([
 
             return true;
         },
+        _createTableColumns: function () {
 
+    var oTable = this.byId("purchaseRegisterTable");
+
+    oTable.destroyColumns();
+
+    var aColumns = [
+        { label: "Purchase Requisition No.", property: "Pr" },
+        { label: "Purchase Requisition Item No.", property: "Pritm" },
+        { label: "PR Plant", property: "Prplant" },
+        { label: "PR Plant Name", property: "Prplantname" },
+        { label: "PR Date", property: "PurchaseReqnCreationDate" },
+        { label: "PR Release Date", property: "Prreldt" },
+        { label: "PR Qty", property: "RequestedQuantity" },
+        { label: "PR Item Text", property: "Prtext" },
+
+        { label: "PO No.", property: "Po" },
+        { label: "PO Item No.", property: "Poitm" },
+        { label: "Material Code", property: "Material" },
+        { label: "PO Plant", property: "Plant" },
+        { label: "PO Plant Name", property: "PlantName" },
+        { label: "Material Description", property: "PurchaseOrderItemText" },
+        { label: "PO Item Text", property: "Potext" },
+        { label: "Vendor Code", property: "Supplier" },
+        { label: "Vendor Name", property: "SupplierFullName" },
+        { label: "PO Date", property: "PurchaseOrderDate" },
+        { label: "PO Release Date", property: "Poreldate" },
+        { label: "PO Qty", property: "OrderQuantity" },
+
+        { label: "UOM", property: "UnitOfMeasure" },
+        { label: "UOM Description", property: "UnitOfMeasureLongName" },
+
+        { label: "GRN No.", property: "Grn" },
+        { label: "GRN Year", property: "Grnyr" },
+        { label: "GRN Item", property: "Grnitm" },
+        { label: "GRN Date", property: "PostingDate" },
+        { label: "GRN Qty", property: "QuantityInEntryUnit" },
+        { label: "GRN Amount", property: "PurOrdAmountInCompanyCodeCrcy1" },
+
+        { label: "Gate Entry No.", property: "YY1_GateEntryNumber_MMI" },
+        { label: "Gate Entry Date", property: "gateentrydate" },
+        { label: "Gate Entry Qty", property: "YY1_ChallanQuantity_MMI" },
+        { label: "QC Status", property: "Qcsta" },
+        { label: "By Hand", property: "byhand" },
+        { label: "Vehicle No.", property: "YY1_VehicleNumber_MMI" },
+        { label: "Transporter Name", property: "transportername" },
+        { label: "Driver Name", property: "drivername" },
+        { label: "Tare Weight", property: "YY1_TareWeight_MMI" },
+        { label: "Unit Weight", property: "unitwt" },
+        { label: "Gross Weight", property: "YY1_GrossWeight_MMI" },
+        { label: "Net Weight", property: "YY1_NetWeight_MMI" },
+
+        { label: "Check-In Date", property: "chkindt" },
+        { label: "Check-In Time", property: "chkintm" },
+        { label: "Check-Out Date", property: "chkoutdt" },
+        { label: "Check-Out Time", property: "chkouttm" },
+
+        { label: "GL Account", property: "GLAccount" },
+        { label: "GL Description", property: "GLAccountLongName" },
+
+        { label: "WBS No.", property: "wbs" },
+        { label: "WBS Description", property: "wbsdesc" },
+
+        { label: "Invoice Posting Number", property: "supinv" },
+        { label: "Condition Type", property: "condtype" },
+        { label: "Invoice Posting Date", property: "invpostdt" },
+        { label: "Vendor Invoice No.", property: "SupplierInvoiceIDByInvcgParty" },
+        { label: "Vendor Invoice Date", property: "DocumentDate" },
+        { label: "Tax Code", property: "TaxCode" },
+
+        { label: "IGST", property: "igst" },
+        { label: "CGST", property: "cgst" },
+        { label: "SGST", property: "sgst" },
+        { label: "GST Amount", property: "gst" },
+        { label: "Invoice Amount", property: "PurOrdAmountInCompanyCodeCrcy" },
+        { label: "Payment Terms", property: "PaymentTerms" },
+        { label: "Payment Due Date", property: "DueCalculationBaseDate" }
+    ];
+
+    aColumns.forEach(function (oCol) {
+
+        oTable.addColumn(
+            new Column({
+                width: "12rem",
+                sortProperty: oCol.property,
+                filterProperty: oCol.property,
+                label: new Label({
+                    text: oCol.label
+                }),
+                template: new Text({
+                    text: "{" + oCol.property + "}"
+                })
+            })
+        );
+
+    });
+},
         onSearch: function (oEvent) {
             var oTable = this.byId("purchaseRegisterTable");
             var that = this;

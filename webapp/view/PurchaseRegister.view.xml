@@ -244,18 +244,13 @@
         </f:header>
 
         <f:content>
-            <VBox class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop">
+            <!-- <VBox class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop"> -->
                 <ui:Table
                     id="purchaseRegisterTable"
                     selectionMode="MultiToggle"
                     threshold="100"
-                    rowActionCount="1"
-                    visibleRowCountMode="Fixed"
-                    visibleRowCount="7"
-                    minAutoRowCount="7"
-                    rowHeight="34"
-                    columnHeaderHeight="42"
-                    width="100%"
+                    
+                    visibleRowCountMode="Auto"
                 >
                     <ui:extension>
                         <OverflowToolbar>
@@ -274,6 +269,7 @@
                                 icon="sap-icon://copy"
                                 type="Transparent"
                                 tooltip="Copy"
+                                visible="false"
                             />
                             <Button
                                 icon="sap-icon://action-settings"
@@ -291,7 +287,7 @@
                         </OverflowToolbar>
                     </ui:extension>
                 </ui:Table>
-            </VBox>
+            <!-- </VBox> -->
         </f:content>
     </f:DynamicPage>
 </mvc:View>

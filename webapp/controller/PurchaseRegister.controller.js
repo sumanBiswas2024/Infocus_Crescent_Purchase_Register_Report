@@ -304,11 +304,11 @@ sap.ui.define([
 
         _configureTableScrolling: function (oTable) {
             oTable.setThreshold(100);
-            oTable.setVisibleRowCountMode(VisibleRowCountMode.Fixed);
-            oTable.setVisibleRowCount(7);
-            oTable.setMinAutoRowCount(7);
-            oTable.setRowHeight(34);
-            oTable.setColumnHeaderHeight(42);
+            // oTable.setVisibleRowCountMode(VisibleRowCountMode.Fixed);
+            // oTable.setVisibleRowCount(7);
+            // oTable.setMinAutoRowCount(7);
+            // oTable.setRowHeight(34);
+            // oTable.setColumnHeaderHeight(42);
             oTable.setNoData("Use the filters and press Go to load purchase register data.");
         },
 

@@ -12,22 +12,44 @@
     xmlns:fb="sap.ui.comp.filterbar"
     xmlns:ui="sap.ui.table"
     xmlns:core="sap.ui.core"
-    xmlns:rowmodes="sap.ui.table.rowmodes"
 >
     <f:DynamicPage
         id="dynamicPageId"
         headerExpanded="true"
         showFooter="false"
-        
+        fitContent="true"
+        class="sapUiNoContentPadding"
     >
         <f:title>
             <f:DynamicPageTitle>
                 <f:heading>
-                    <Title
-                        text="Standard"
-                        level="H2"
-                    />
+                    <HBox
+                        alignItems="Center"
+                        renderType="Bare"
+                    >
+                        <Title
+                            text="Standard"
+                            level="H2"
+                            class="sapUiTinyMarginEnd"
+                        />
+                        <Text
+                            text="*"
+                            class="sapUiTinyMarginEnd"
+                        />
+                        <Button
+                            icon="sap-icon://slim-arrow-down"
+                            type="Transparent"
+                            tooltip="Variant"
+                        />
+                    </HBox>
                 </f:heading>
+                <f:actions>
+                    <Button
+                        icon="sap-icon://action"
+                        type="Transparent"
+                        tooltip="Share"
+                    />
+                </f:actions>
             </f:DynamicPageTitle>
         </f:title>
 
@@ -40,12 +62,13 @@
                     useToolbar="false"
                     clear=".onClear"
                     filterChange=".onFilterChange"
+                    class="sapUiSmallMarginTop"
                 >
                     <fb:filterGroupItems>
                         <fb:FilterGroupItem
                             groupName="G1"
                             name="PoDateFrom"
-                            label="From PO Date"
+                            label="From PO Date:"
                             visibleInFilterBar="true"
                             mandatory="true"
                         >
@@ -63,7 +86,7 @@
                         <fb:FilterGroupItem
                             groupName="G1"
                             name="PoDateTo"
-                            label="To PO Date"
+                            label="To PO Date:"
                             visibleInFilterBar="true"
                             mandatory="true"
                         >
@@ -81,7 +104,7 @@
                         <fb:FilterGroupItem
                             groupName="G1"
                             name="Pr"
-                            label="Purchase Requisition No"
+                            label="Purchase Requisition No.:"
                             visibleInFilterBar="true"
                         >
                             <fb:control>
@@ -104,7 +127,7 @@
                         <fb:FilterGroupItem
                             groupName="G1"
                             name="PrDate"
-                            label="PR Date"
+                            label="PR Date:"
                             visibleInFilterBar="true"
                         >
                             <fb:control>
@@ -127,7 +150,7 @@
                         <fb:FilterGroupItem
                             groupName="G1"
                             name="Po"
-                            label="PO No"
+                            label="PO No.:"
                             visibleInFilterBar="true"
                         >
                             <fb:control>
@@ -150,7 +173,7 @@
                         <fb:FilterGroupItem
                             groupName="G1"
                             name="Material"
-                            label="Material Code"
+                            label="Material Code:"
                             visibleInFilterBar="true"
                         >
                             <fb:control>
@@ -173,7 +196,7 @@
                         <fb:FilterGroupItem
                             groupName="G1"
                             name="Plant"
-                            label="PO Plant"
+                            label="PO Plant:"
                             visibleInFilterBar="true"
                         >
                             <fb:control>
@@ -196,7 +219,7 @@
                         <fb:FilterGroupItem
                             groupName="G1"
                             name="GateEntry"
-                            label="Gate Entry No"
+                            label="Gate Entry No.:"
                             visibleInFilterBar="true"
                         >
                             <fb:control>
@@ -221,50 +244,54 @@
         </f:header>
 
         <f:content>
-            <ui:Table
-    id="purchaseRegisterTable"
-    selectionMode="MultiToggle"
-    threshold="100"
-    rowActionCount="1"
-    visibleRowCount="Auto">
-
-    <ui:rowMode>
-        <rowmodes:Auto
-            minRowCount="15"
-            maxRowCount="40"/>
-    </ui:rowMode>
-
-    <ui:extension>
-        <Toolbar>
-            <Title
-                id="tableHeaderTitle"
-                text="Purchase Register "
-                level="H2"
-            />
-            <ToolbarSpacer />
-            <ToolbarSeparator/>
-
-    <Text
-        id="loadedRowsText"
-        text="Loaded: 0"
-    />
-
-    <ToolbarSpacer />
-            <Button
-                icon="sap-icon://excel-attachment"
-                tooltip="Export"
-                press=".onExportExcel"
-            />
-            <Button
-                 id="settingsButton"
-                icon="sap-icon://action-settings"
-                tooltip="Settings"
-                press=".onTableSettings"
-            />
-        </Toolbar>
-    </ui:extension>
-
-</ui:Table>
+            <VBox class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop">
+                <ui:Table
+                    id="purchaseRegisterTable"
+                    selectionMode="MultiToggle"
+                    threshold="100"
+                    rowActionCount="1"
+                    visibleRowCountMode="Fixed"
+                    visibleRowCount="7"
+                    minAutoRowCount="7"
+                    rowHeight="34"
+                    columnHeaderHeight="42"
+                    width="100%"
+                >
+                    <ui:extension>
+                        <OverflowToolbar>
+                            <Title
+                                id="tableHeaderTitle"
+                                text="Purchase Register"
+                                level="H2"
+                            />
+                            <ToolbarSpacer />
+                            <Text
+                                id="loadedRowsText"
+                                text="Loaded: 0"
+                            />
+                            <ToolbarSeparator />
+                            <Button
+                                icon="sap-icon://copy"
+                                type="Transparent"
+                                tooltip="Copy"
+                            />
+                            <Button
+                                icon="sap-icon://action-settings"
+                                type="Transparent"
+                                tooltip="Table Settings"
+                                press=".onTableSettings"
+                            />
+                            <Button
+                                id="settingsButton"
+                                icon="sap-icon://excel-attachment"
+                                type="Transparent"
+                                tooltip="Export"
+                                press=".onExportExcel"
+                            />
+                        </OverflowToolbar>
+                    </ui:extension>
+                </ui:Table>
+            </VBox>
         </f:content>
     </f:DynamicPage>
 </mvc:View>

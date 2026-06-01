@@ -282,9 +282,7 @@ sap.ui.define([
             ];
 
             this._aExportColumns = aColumns;
-            oTable.setThreshold(100);
-            oTable.setVisibleRowCountMode(VisibleRowCountMode.Fixed);
-            oTable.setVisibleRowCount(18);
+            this._configureTableScrolling(oTable);
             oTable.destroyColumns();
 
             aColumns.forEach(function (oCol) {
@@ -302,6 +300,16 @@ sap.ui.define([
                     })
                 }).data("columnKey", oCol.property));
             });
+        },
+
+        _configureTableScrolling: function (oTable) {
+            oTable.setThreshold(100);
+            oTable.setVisibleRowCountMode(VisibleRowCountMode.Fixed);
+            oTable.setVisibleRowCount(7);
+            oTable.setMinAutoRowCount(7);
+            oTable.setRowHeight(34);
+            oTable.setColumnHeaderHeight(42);
+            oTable.setNoData("Use the filters and press Go to load purchase register data.");
         },
 
         onSearch: function () {

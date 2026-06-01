@@ -20,6 +20,7 @@ sap.ui.define([
     "sap/ui/core/format/DateFormat",
     "sap/m/Token",
     "sap/ui/table/Column",
+    "sap/ui/table/VisibleRowCountMode",
     "sap/m/Label",
     "sap/m/Text",
     "sap/ui/export/Spreadsheet",
@@ -47,6 +48,7 @@ sap.ui.define([
     DateFormat,
     Token,
     Column,
+    VisibleRowCountMode,
     Label,
     Text,
     Spreadsheet,
@@ -281,6 +283,8 @@ sap.ui.define([
 
             this._aExportColumns = aColumns;
             oTable.setThreshold(100);
+            oTable.setVisibleRowCountMode(VisibleRowCountMode.Fixed);
+            oTable.setVisibleRowCount(18);
             oTable.destroyColumns();
 
             aColumns.forEach(function (oCol) {
@@ -491,6 +495,26 @@ sap.ui.define([
                                         items: [
                                             new Title({ text: "Show or hide columns", level: "H4" }).addStyleClass("sapUiSmallMarginBottom"),
                                             this._oColumnSearchField,
+                                            new Toolbar({
+                                                design: "Transparent",
+                                                content: [
+                                                    new ToolbarSpacer(),
+                                                    new Button({
+                                                        text: "Show All",
+                                                        icon: "sap-icon://show",
+                                                        press: function () {
+                                                            that._setAllColumnSelections(true);
+                                                        }
+                                                    }),
+                                                    new Button({
+                                                        text: "Hide All",
+                                                        icon: "sap-icon://hide",
+                                                        press: function () {
+                                                            that._setAllColumnSelections(false);
+                                                        }
+                                                    })
+                                                ]
+                                            }),
                                             this._oColumnVisibilityList
                                         ]
                                     }).addStyleClass("sapUiSmallMargin")
@@ -598,6 +622,12 @@ sap.ui.define([
                 oList.getItems().forEach(function (oItem) {
                     oItem.setVisible(oItem.getTitle().toLowerCase().indexOf(sNormalizedQuery) !== -1);
                 });
+            });
+        },
+
+        _setAllColumnSelections: function (bSelected) {
+            this._oColumnVisibilityList.getItems().forEach(function (oItem) {
+                oItem.setSelected(bSelected);
             });
         },
 

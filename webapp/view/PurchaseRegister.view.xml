@@ -12,6 +12,7 @@
     xmlns:fb="sap.ui.comp.filterbar"
     xmlns:ui="sap.ui.table"
     xmlns:core="sap.ui.core"
+    xmlns:rowmodes="sap.ui.table.rowmodes"
 >
     <f:DynamicPage
         id="dynamicPageId"
@@ -221,53 +222,47 @@
 
         <f:content>
             <ui:Table
-                id="purchaseRegisterTable"
-                selectionMode="MultiToggle"
-                visibleRowCountMode="Auto"
-                rowActionCount="1"
-            >
-                <ui:extension>
-                    <Toolbar>
-                        <Title
-                            id="tableHeaderTitle"
-                            text="Purchase Register (0)"
-                            level="H2"
-                        />
-                        <ToolbarSpacer />
-                        <Button
-                            icon="sap-icon://excel-attachment"
-                            tooltip="Export"
-                            press=".onExportExcel"
-                        />
-                        <Button
-                            icon="sap-icon://action-settings"
-                            tooltip="Settings"
-                            press=".onTableSettings"
-                        />
-                    </Toolbar>
-                </ui:extension>
+    id="purchaseRegisterTable"
+    selectionMode="MultiToggle"
+    threshold="100"
+    rowActionCount="1">
 
-               <!-- <ui:columns>
-                    <ui:Column width="11rem">
-                        <Label
-                            text="Purchase Requisition No."
-                            tooltip="Purchase Requisition Document Number"
-                        />
-                        <ui:template>
-                            <Text text="{Pr}" />
-                        </ui:template>
-                    </ui:Column>
-                    
-                </ui:columns>-->
+    <ui:rowMode>
+        <rowmodes:Auto
+            minRowCount="15"
+            maxRowCount="40"/>
+    </ui:rowMode>
 
-                <!-- <ui:rowActionTemplate>
-                    <ui:RowAction>
-                        <ui:items>
-                            <ui:RowActionItem type="Navigation" press=".onRowNavigate"/>
-                        </ui:items>
-                    </ui:RowAction>
-                </ui:rowActionTemplate> -->
-            </ui:Table>
+    <ui:extension>
+        <Toolbar>
+            <Title
+                id="tableHeaderTitle"
+                text="Purchase Register "
+                level="H2"
+            />
+            <ToolbarSpacer />
+            <ToolbarSeparator/>
+
+    <Text
+        id="loadedRowsText"
+        text="Loaded: 0"
+    />
+
+    <ToolbarSpacer />
+            <Button
+                icon="sap-icon://excel-attachment"
+                tooltip="Export"
+                press=".onExportExcel"
+            />
+            <Button
+                icon="sap-icon://action-settings"
+                tooltip="Settings"
+                press=".onTableSettings"
+            />
+        </Toolbar>
+    </ui:extension>
+
+</ui:Table>
         </f:content>
     </f:DynamicPage>
 </mvc:View>

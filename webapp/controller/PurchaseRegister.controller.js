@@ -20,8 +20,9 @@ sap.ui.define([
     "sap/m/Token",
     "sap/ui/table/Column",
     "sap/m/Label",
-    "sap/m/Text"
-], function (Controller, Filter, FilterOperator, MessageBox, DateFormat, Token, Column, Label, Text) {
+    "sap/m/Text",
+    "sap/ui/export/Spreadsheet"
+], function (Controller, Filter, FilterOperator, MessageBox, DateFormat, Token, Column, Label, Text, Spreadsheet) {
     "use strict";
 
     return Controller.extend("purchaseregisterreport.controller.PurchaseRegister", {
@@ -102,6 +103,43 @@ sap.ui.define([
             // Also trigger the table blur
             this.onFilterChange();
         },
+        onExportExcel: function () {
+
+    console.log("Spreadsheet:", Spreadsheet);
+
+    var oTable = this.byId("purchaseRegisterTable");
+
+    console.log("Binding:", oTable.getBinding("rows"));
+
+    var aExportCols = this._aExportColumns.map(function (oCol) {
+        return {
+            label: oCol.label,
+            property: oCol.property
+        };
+    });
+
+    console.log("Columns:", aExportCols);
+
+    try {
+
+        var oSpreadsheet = new Spreadsheet({
+            workbook: {
+                columns: aExportCols
+            },
+            dataSource: oTable.getBinding("rows"),
+            fileName: "Purchase_Register.xlsx"
+        });
+
+        console.log("Spreadsheet created", oSpreadsheet);
+
+        oSpreadsheet.build().finally(function () {
+            oSpreadsheet.destroy();
+        });
+
+    } catch (e) {
+        console.error("EXPORT ERROR", e);
+    }
+},
 
         _validateSearchInputs: function () {
             var oDateFromInput = this.byId("filterPoDateFrom");
@@ -145,7 +183,7 @@ sap.ui.define([
         _createTableColumns: function () {
 
     var oTable = this.byId("purchaseRegisterTable");
-
+    oTable.setThreshold(100);
     oTable.destroyColumns();
 
     var aColumns = [
@@ -220,7 +258,7 @@ sap.ui.define([
         { label: "Payment Terms", property: "PaymentTerms" },
         { label: "Payment Due Date", property: "DueCalculationBaseDate" }
     ];
-
+    this._aExportColumns = aColumns;
     aColumns.forEach(function (oCol) {
 
         oTable.addColumn(
@@ -344,7 +382,13 @@ sap.ui.define([
                         }
                         var oBinding = oDataEvent.getSource();
                         var iCount = oBinding.getLength() || 0;
-                        that.byId("tableHeaderTitle").setText("Purchase Register (" + iCount + ")");
+                        that.byId("tableHeaderTitle")
+    .setText("Purchase Register (" + iLength + ")");
+
+that.byId("loadedRowsText")
+    .setText("Loaded: " + iLength);
+
+console.log("Rows currently loaded:", iLength);
 
                         // 3. No Data Validation Check
                         if (iCount === 0) {

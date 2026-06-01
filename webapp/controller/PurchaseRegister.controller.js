@@ -15,27 +15,60 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
+    "sap/ui/model/Sorter",
     "sap/m/MessageBox",
     "sap/ui/core/format/DateFormat",
     "sap/m/Token",
     "sap/ui/table/Column",
     "sap/m/Label",
     "sap/m/Text",
-    "sap/ui/export/Spreadsheet"
-], function (Controller, Filter, FilterOperator, MessageBox, DateFormat, Token, Column, Label, Text, Spreadsheet) {
+    "sap/ui/export/Spreadsheet",
+    "sap/m/Dialog",
+    "sap/m/List",
+    "sap/m/StandardListItem",
+    "sap/m/Button",
+    "sap/m/CheckBox",
+    "sap/m/Select",
+    "sap/ui/core/Item",
+    "sap/m/VBox",
+    "sap/m/HBox",
+    "sap/m/Title"
+], function (
+    Controller,
+    Filter,
+    FilterOperator,
+    Sorter,
+    MessageBox,
+    DateFormat,
+    Token,
+    Column,
+    Label,
+    Text,
+    Spreadsheet,
+    Dialog,
+    List,
+    StandardListItem,
+    Button,
+    CheckBox,
+    Select,
+    Item,
+    VBox,
+    HBox,
+    Title
+) {
     "use strict";
 
     return Controller.extend("purchaseregisterreport.controller.PurchaseRegister", {
 
         onInit: function () {
             var that = this;
+
             this._createTableColumns();
 
-            // Wait for the view to render/initialize to safely grab the component model
             this.getView().attachEventOnce("modelContextChange", function () {
-                var oModel = that.getView().getModel(); // Assuming main service is the default nameless model
+                var oModel = that.getView().getModel();
+
                 if (oModel) {
-                    // Check for OData V4 Metadata load errors
                     oModel.getMetaModel().requestObject("/").catch(function (oError) {
                         MessageBox.error(
                             "Failed to load OData service metadata. Please check the backend connection or gateway logs.",
@@ -47,19 +80,15 @@ sap.ui.define([
                         );
                     });
 
-                    // Converts manually typed text into a standard Token with the 'x' remove icon
-                    var aMultiInputIds = ["filterPr", "filterPrDate", "filterPo", "filterMaterial", "filterPlant", "filterGateEntry"];
-
-                    aMultiInputIds.forEach(function (sId) {
+                    ["filterPr", "filterPrDate", "filterPo", "filterMaterial", "filterPlant", "filterGateEntry"].forEach(function (sId) {
                         var oMultiInput = that.byId(sId);
+
                         if (oMultiInput) {
                             oMultiInput.addValidator(function (args) {
                                 var sText = args.text;
 
-                                // Blur the table since the filter changed
                                 that.onFilterChange();
 
-                                // Creates the token looking exactly like standard Fiori (e.g., "=11111")
                                 return new Token({
                                     key: sText,
                                     text: "=" + sText
@@ -67,310 +96,293 @@ sap.ui.define([
                             });
                         }
                     });
-                    // ============================
                 }
             });
         },
 
-        /**
-          * Fired whenever ANY input field in the FilterBar is changed by the user.
-          * Sets the table to a "dirty" blurred state (Standard Fiori behavior).
-          */
         onFilterChange: function () {
             var oTable = this.byId("purchaseRegisterTable");
+
             if (oTable) {
                 oTable.setShowOverlay(true);
             }
         },
-        /**
-         * Validates manually typed dates in the DatePickers
-         */
+
         onDateChange: function (oEvent) {
             var oDatePicker = oEvent.getSource();
-            var bValid = oEvent.getParameter("valid"); // SAPUI5 natively checks if it matches displayFormat
+            var bValid = oEvent.getParameter("valid");
             var sValue = oEvent.getParameter("value");
 
             if (sValue !== "" && !bValid) {
-                // If the user typed something invalid (e.g. "32.13.2026" or "abc")
                 oDatePicker.setValueState("Error");
                 oDatePicker.setValueStateText("Invalid Date Format. Please use DD.MM.YYYY");
             } else {
-                // Clear the error state if valid
                 oDatePicker.setValueState("None");
                 oDatePicker.setValueStateText("");
             }
 
-            // Also trigger the table blur
             this.onFilterChange();
         },
+
         onExportExcel: function () {
+            var oTable = this.byId("purchaseRegisterTable");
+            var aExportCols = this._aExportColumns.map(function (oCol) {
+                return {
+                    label: oCol.label,
+                    property: oCol.property
+                };
+            });
 
-    console.log("Spreadsheet:", Spreadsheet);
+            try {
+                var oSpreadsheet = new Spreadsheet({
+                    workbook: {
+                        columns: aExportCols
+                    },
+                    dataSource: oTable.getBinding("rows"),
+                    fileName: "Purchase_Register.xlsx"
+                });
 
-    var oTable = this.byId("purchaseRegisterTable");
-
-    console.log("Binding:", oTable.getBinding("rows"));
-
-    var aExportCols = this._aExportColumns.map(function (oCol) {
-        return {
-            label: oCol.label,
-            property: oCol.property
-        };
-    });
-
-    console.log("Columns:", aExportCols);
-
-    try {
-
-        var oSpreadsheet = new Spreadsheet({
-            workbook: {
-                columns: aExportCols
-            },
-            dataSource: oTable.getBinding("rows"),
-            fileName: "Purchase_Register.xlsx"
-        });
-
-        console.log("Spreadsheet created", oSpreadsheet);
-
-        oSpreadsheet.build().finally(function () {
-            oSpreadsheet.destroy();
-        });
-
-    } catch (e) {
-        console.error("EXPORT ERROR", e);
-    }
-},
+                oSpreadsheet.build().finally(function () {
+                    oSpreadsheet.destroy();
+                });
+            } catch (e) {
+                MessageBox.error("Unable to export the report.", {
+                    title: "Export Failed",
+                    details: e.message || e.toString(),
+                    styleClass: "sapUiSizeCompact"
+                });
+            }
+        },
 
         _validateSearchInputs: function () {
             var oDateFromInput = this.byId("filterPoDateFrom");
             var oDateToInput = this.byId("filterPoDateTo");
-
-            // 1. Block the search if the DatePickers are currently in an Error state
-            if (oDateFromInput.getValueState() === "Error" || oDateToInput.getValueState() === "Error") {
-                MessageBox.error("Please fix the invalid date formats(DD.MM.YYYY) before searching.", { title: "Validation Error" });
-                return false;
-            }
-
             var sDateFrom = oDateFromInput.getValue();
             var sDateTo = oDateToInput.getValue();
+            var oDateFrom;
+            var oDateTo;
 
-            // 2. Dynamic check for empty fields
-            if (!sDateFrom && !sDateTo) {
-                // Both are empty
-                MessageBox.error("Both 'From PO Date' and 'To PO Date' are mandatory parameters.", { title: "Missing Parameters" });
-                return false;
-            } else if (!sDateFrom) {
-                // Only 'From PO Date' is empty
-                MessageBox.error("'From PO Date' is a mandatory parameter.", { title: "Missing Parameter" });
-                return false;
-            } else if (!sDateTo) {
-                // Only 'To PO Date' is empty
-                MessageBox.error("'To PO Date' is a mandatory parameter.", { title: "Missing Parameter" });
+            if (oDateFromInput.getValueState() === "Error" || oDateToInput.getValueState() === "Error") {
+                MessageBox.error("Please fix the invalid date formats(DD.MM.YYYY) before searching.", {
+                    title: "Validation Error"
+                });
                 return false;
             }
 
-            // 3. Logic validation (From Date cannot be after To Date)
-            var oDateFrom = oDateFromInput.getDateValue();
-            var oDateTo = oDateToInput.getDateValue();
+            if (!sDateFrom && !sDateTo) {
+                MessageBox.error("Both 'From PO Date' and 'To PO Date' are mandatory parameters.", {
+                    title: "Missing Parameters"
+                });
+                return false;
+            }
+
+            if (!sDateFrom) {
+                MessageBox.error("'From PO Date' is a mandatory parameter.", {
+                    title: "Missing Parameter"
+                });
+                return false;
+            }
+
+            if (!sDateTo) {
+                MessageBox.error("'To PO Date' is a mandatory parameter.", {
+                    title: "Missing Parameter"
+                });
+                return false;
+            }
+
+            oDateFrom = oDateFromInput.getDateValue();
+            oDateTo = oDateToInput.getDateValue();
 
             if (oDateFrom && oDateTo && oDateFrom > oDateTo) {
-                MessageBox.error("'From PO Date' cannot be after 'To PO Date'.", { title: "Invalid Date Range" });
+                MessageBox.error("'From PO Date' cannot be after 'To PO Date'.", {
+                    title: "Invalid Date Range"
+                });
                 return false;
             }
 
             return true;
         },
+
         _createTableColumns: function () {
+            var oTable = this.byId("purchaseRegisterTable");
+            var aColumns = [
+                { label: "Purchase Requisition No.", property: "Pr" },
+                { label: "Purchase Requisition Item No.", property: "Pritm" },
+                { label: "PR Plant", property: "Prplant" },
+                { label: "PR Plant Name", property: "Prplantname" },
+                { label: "PR Date", property: "PurchaseReqnCreationDate" },
+                { label: "PR Release Date", property: "Prreldt" },
+                { label: "PR Qty", property: "RequestedQuantity" },
+                { label: "PR Item Text", property: "Prtext" },
+                { label: "PO No.", property: "Po" },
+                { label: "PO Item No.", property: "Poitm" },
+                { label: "Material Code", property: "Material" },
+                { label: "PO Plant", property: "Plant" },
+                { label: "PO Plant Name", property: "PlantName" },
+                { label: "Material Description", property: "PurchaseOrderItemText" },
+                { label: "PO Item Text", property: "Potext" },
+                { label: "Vendor Code", property: "Supplier" },
+                { label: "Vendor Name", property: "SupplierFullName" },
+                { label: "PO Date", property: "PurchaseOrderDate" },
+                { label: "PO Release Date", property: "Poreldate" },
+                { label: "PO Qty", property: "OrderQuantity" },
+                { label: "UOM", property: "UnitOfMeasure" },
+                { label: "UOM Description", property: "UnitOfMeasureLongName" },
+                { label: "GRN No.", property: "Grn" },
+                { label: "GRN Year", property: "Grnyr" },
+                { label: "GRN Item", property: "Grnitm" },
+                { label: "GRN Date", property: "PostingDate" },
+                { label: "GRN Qty", property: "QuantityInEntryUnit" },
+                { label: "GRN Amount", property: "PurOrdAmountInCompanyCodeCrcy1" },
+                { label: "Gate Entry No.", property: "YY1_GateEntryNumber_MMI" },
+                { label: "Gate Entry Date", property: "gateentrydate" },
+                { label: "Gate Entry Qty", property: "YY1_ChallanQuantity_MMI" },
+                { label: "QC Status", property: "Qcsta" },
+                { label: "By Hand", property: "byhand" },
+                { label: "Vehicle No.", property: "YY1_VehicleNumber_MMI" },
+                { label: "Transporter Name", property: "transportername" },
+                { label: "Driver Name", property: "drivername" },
+                { label: "Tare Weight", property: "YY1_TareWeight_MMI" },
+                { label: "Unit Weight", property: "unitwt" },
+                { label: "Gross Weight", property: "YY1_GrossWeight_MMI" },
+                { label: "Net Weight", property: "YY1_NetWeight_MMI" },
+                { label: "Check-In Date", property: "chkindt" },
+                { label: "Check-In Time", property: "chkintm" },
+                { label: "Check-Out Date", property: "chkoutdt" },
+                { label: "Check-Out Time", property: "chkouttm" },
+                { label: "GL Account", property: "GLAccount" },
+                { label: "GL Description", property: "GLAccountLongName" },
+                { label: "WBS No.", property: "wbs" },
+                { label: "WBS Description", property: "wbsdesc" },
+                { label: "Invoice Posting Number", property: "supinv" },
+                { label: "Condition Type", property: "condtype" },
+                { label: "Invoice Posting Date", property: "invpostdt" },
+                { label: "Vendor Invoice No.", property: "SupplierInvoiceIDByInvcgParty" },
+                { label: "Vendor Invoice Date", property: "DocumentDate" },
+                { label: "Tax Code", property: "TaxCode" },
+                { label: "IGST", property: "igst" },
+                { label: "CGST", property: "cgst" },
+                { label: "SGST", property: "sgst" },
+                { label: "GST Amount", property: "gst" },
+                { label: "Invoice Amount", property: "PurOrdAmountInCompanyCodeCrcy" },
+                { label: "Payment Terms", property: "PaymentTerms" },
+                { label: "Payment Due Date", property: "DueCalculationBaseDate" }
+            ];
 
-    var oTable = this.byId("purchaseRegisterTable");
-    oTable.setThreshold(100);
-    oTable.destroyColumns();
+            this._aExportColumns = aColumns;
+            oTable.setThreshold(100);
+            oTable.destroyColumns();
 
-    var aColumns = [
-        { label: "Purchase Requisition No.", property: "Pr" },
-        { label: "Purchase Requisition Item No.", property: "Pritm" },
-        { label: "PR Plant", property: "Prplant" },
-        { label: "PR Plant Name", property: "Prplantname" },
-        { label: "PR Date", property: "PurchaseReqnCreationDate" },
-        { label: "PR Release Date", property: "Prreldt" },
-        { label: "PR Qty", property: "RequestedQuantity" },
-        { label: "PR Item Text", property: "Prtext" },
+            aColumns.forEach(function (oCol) {
+                oTable.addColumn(new Column({
+                    width: "12rem",
+                    sortProperty: oCol.property,
+                    filterProperty: oCol.property,
+                    showSortMenuEntry: true,
+                    showFilterMenuEntry: true,
+                    label: new Label({
+                        text: oCol.label
+                    }),
+                    template: new Text({
+                        text: "{" + oCol.property + "}"
+                    })
+                }).data("columnKey", oCol.property));
+            });
+        },
 
-        { label: "PO No.", property: "Po" },
-        { label: "PO Item No.", property: "Poitm" },
-        { label: "Material Code", property: "Material" },
-        { label: "PO Plant", property: "Plant" },
-        { label: "PO Plant Name", property: "PlantName" },
-        { label: "Material Description", property: "PurchaseOrderItemText" },
-        { label: "PO Item Text", property: "Potext" },
-        { label: "Vendor Code", property: "Supplier" },
-        { label: "Vendor Name", property: "SupplierFullName" },
-        { label: "PO Date", property: "PurchaseOrderDate" },
-        { label: "PO Release Date", property: "Poreldate" },
-        { label: "PO Qty", property: "OrderQuantity" },
-
-        { label: "UOM", property: "UnitOfMeasure" },
-        { label: "UOM Description", property: "UnitOfMeasureLongName" },
-
-        { label: "GRN No.", property: "Grn" },
-        { label: "GRN Year", property: "Grnyr" },
-        { label: "GRN Item", property: "Grnitm" },
-        { label: "GRN Date", property: "PostingDate" },
-        { label: "GRN Qty", property: "QuantityInEntryUnit" },
-        { label: "GRN Amount", property: "PurOrdAmountInCompanyCodeCrcy1" },
-
-        { label: "Gate Entry No.", property: "YY1_GateEntryNumber_MMI" },
-        { label: "Gate Entry Date", property: "gateentrydate" },
-        { label: "Gate Entry Qty", property: "YY1_ChallanQuantity_MMI" },
-        { label: "QC Status", property: "Qcsta" },
-        { label: "By Hand", property: "byhand" },
-        { label: "Vehicle No.", property: "YY1_VehicleNumber_MMI" },
-        { label: "Transporter Name", property: "transportername" },
-        { label: "Driver Name", property: "drivername" },
-        { label: "Tare Weight", property: "YY1_TareWeight_MMI" },
-        { label: "Unit Weight", property: "unitwt" },
-        { label: "Gross Weight", property: "YY1_GrossWeight_MMI" },
-        { label: "Net Weight", property: "YY1_NetWeight_MMI" },
-
-        { label: "Check-In Date", property: "chkindt" },
-        { label: "Check-In Time", property: "chkintm" },
-        { label: "Check-Out Date", property: "chkoutdt" },
-        { label: "Check-Out Time", property: "chkouttm" },
-
-        { label: "GL Account", property: "GLAccount" },
-        { label: "GL Description", property: "GLAccountLongName" },
-
-        { label: "WBS No.", property: "wbs" },
-        { label: "WBS Description", property: "wbsdesc" },
-
-        { label: "Invoice Posting Number", property: "supinv" },
-        { label: "Condition Type", property: "condtype" },
-        { label: "Invoice Posting Date", property: "invpostdt" },
-        { label: "Vendor Invoice No.", property: "SupplierInvoiceIDByInvcgParty" },
-        { label: "Vendor Invoice Date", property: "DocumentDate" },
-        { label: "Tax Code", property: "TaxCode" },
-
-        { label: "IGST", property: "igst" },
-        { label: "CGST", property: "cgst" },
-        { label: "SGST", property: "sgst" },
-        { label: "GST Amount", property: "gst" },
-        { label: "Invoice Amount", property: "PurOrdAmountInCompanyCodeCrcy" },
-        { label: "Payment Terms", property: "PaymentTerms" },
-        { label: "Payment Due Date", property: "DueCalculationBaseDate" }
-    ];
-    this._aExportColumns = aColumns;
-    aColumns.forEach(function (oCol) {
-
-        oTable.addColumn(
-            new Column({
-                width: "12rem",
-                sortProperty: oCol.property,
-                filterProperty: oCol.property,
-                label: new Label({
-                    text: oCol.label
-                }),
-                template: new Text({
-                    text: "{" + oCol.property + "}"
-                })
-            })
-        );
-
-    });
-},
-        onSearch: function (oEvent) {
+        onSearch: function () {
             var oTable = this.byId("purchaseRegisterTable");
             var that = this;
+            var sDateFrom;
+            var sDateTo;
+            var sBindPath;
+            var aFilters = [];
+            var extractFilters;
 
             if (!this._validateSearchInputs()) {
                 return;
             }
 
-            // Remove the blur from the table because the user clicked Go
             oTable.setShowOverlay(false);
 
-            var sDateFrom = this.byId("filterPoDateFrom").getValue();
-            var sDateTo = this.byId("filterPoDateTo").getValue();
-            var sBindPath = "/ZC_PURCHASE_REG(P_PODateFrom=" + sDateFrom + ",P_PODateTo=" + sDateTo + ")/Set";
+            sDateFrom = this.byId("filterPoDateFrom").getValue();
+            sDateTo = this.byId("filterPoDateTo").getValue();
+            sBindPath = "/ZC_PURCHASE_REG(P_PODateFrom=" + sDateFrom + ",P_PODateTo=" + sDateTo + ")/Set";
 
-            var aFilters = [];
-
-            // Updated extractor to handle UI Date formats (dd.MM.yyyy) -> Backend formats (yyyy-MM-dd)
-            var extractFilters = function (sControlId, sFilterField, isDateField) {
+            extractFilters = function (sControlId, sFilterField, bIsDateField) {
                 var oInput = that.byId(sControlId);
-                if (oInput) {
-                    var aTokens = oInput.getTokens();
-                    var sManualText = oInput.getValue(); // Catch manually typed text that wasn't tokenized
+                var aTokens;
+                var sManualText;
+                var formatVal;
 
-                    var formatVal = function (v) {
-                        if (isDateField && v) {
-                            if (v instanceof Date) {
-                                return DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" }).format(v);
-                            }
-                            // If it's a string token like "29.05.2026", parse it and convert it
-                            var d = DateFormat.getDateInstance({ pattern: "dd.MM.yyyy" }).parse(v);
-                            if (d) return DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" }).format(d);
+                if (!oInput) {
+                    return;
+                }
+
+                aTokens = oInput.getTokens();
+                sManualText = oInput.getValue();
+
+                formatVal = function (v) {
+                    var d;
+
+                    if (bIsDateField && v) {
+                        if (v instanceof Date) {
+                            return DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" }).format(v);
                         }
-                        return v;
-                    };
 
-                    // aTokens.forEach(function (oToken) {
-                    //     var oRange = oToken.data("range");
-                    //     if (oRange) {
-                    //         aFilters.push(new Filter({
-                    //             path: sFilterField,
-                    //             operator: oRange.operation,
-                    //             value1: formatVal(oRange.value1),
-                    //             value2: formatVal(oRange.value2)
-                    //         }));
-                    //     } else {
-                    //         aFilters.push(new Filter(sFilterField, FilterOperator.EQ, formatVal(oToken.getKey())));
-                    //     }
-                    // });
-                    // 1. Process standard Tokens (from Value Help or pressing Enter)
-                    aTokens.forEach(function (oToken) {
-                        var oRange = oToken.data("range");
-                        if (oRange) {
-                            aFilters.push(new Filter({
-                                path: sFilterField,
-                                operator: oRange.operation,
-                                value1: formatVal(oRange.value1),
-                                value2: formatVal(oRange.value2)
-                            }));
-                        } else {
-                            aFilters.push(new Filter(sFilterField, FilterOperator.EQ, formatVal(oToken.getKey())));
+                        d = DateFormat.getDateInstance({ pattern: "dd.MM.yyyy" }).parse(v);
+                        if (d) {
+                            return DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" }).format(d);
                         }
-                    });
-
-                    // 2. Process lingering manual text as an "Equal To" filter
-                    // This ensures typing "29.05.2026" in PR Date manually still works perfectly when they hit Go
-                    if (sManualText) {
-                        aFilters.push(new Filter(sFilterField, FilterOperator.EQ, formatVal(sManualText)));
                     }
+
+                    return v;
+                };
+
+                aTokens.forEach(function (oToken) {
+                    var oRange = oToken.data("range");
+
+                    if (oRange) {
+                        aFilters.push(new Filter({
+                            path: sFilterField,
+                            operator: oRange.operation,
+                            value1: formatVal(oRange.value1),
+                            value2: formatVal(oRange.value2)
+                        }));
+                    } else {
+                        aFilters.push(new Filter(sFilterField, FilterOperator.EQ, formatVal(oToken.getKey())));
+                    }
+                });
+
+                if (sManualText) {
+                    aFilters.push(new Filter(sFilterField, FilterOperator.EQ, formatVal(sManualText)));
                 }
             };
 
-            // Pass 'true' as the third parameter for Date fields so they are converted properly
             extractFilters("filterPr", "Pr", false);
-            extractFilters("filterPrDate", "PurchaseReqnCreationDate", true); // <--- Flagged as Date
+            extractFilters("filterPrDate", "PurchaseReqnCreationDate", true);
             extractFilters("filterPo", "Po", false);
             extractFilters("filterMaterial", "Material", false);
             extractFilters("filterPlant", "Plant", false);
             extractFilters("filterGateEntry", "YY1_GateEntryNumber_MMI", false);
 
-            // 1. Turn ON the busy indicator before calling the backend
-            oTable.setBusyIndicatorDelay(0); // Show spinner immediately without delay
+            oTable.setBusyIndicatorDelay(0);
             oTable.setBusy(true);
 
             oTable.bindRows({
                 path: sBindPath,
-                parameters: { $count: true },
+                parameters: {
+                    $count: true
+                },
                 filters: aFilters,
                 events: {
                     dataReceived: function (oDataEvent) {
-                        // 2. Turn OFF the busy indicator when data/error arrives
+                        var oError = oDataEvent.getParameter("error");
+                        var oBinding;
+                        var iCount;
+
                         oTable.setBusy(false);
 
-                        var oError = oDataEvent.getParameter("error");
                         if (oError) {
                             MessageBox.error("An error occurred while fetching the data.", {
                                 title: "Data Retrieval Failed",
@@ -380,17 +392,13 @@ sap.ui.define([
                             that.byId("tableHeaderTitle").setText("Purchase Register (Error)");
                             return;
                         }
-                        var oBinding = oDataEvent.getSource();
-                        var iCount = oBinding.getLength() || 0;
-                        that.byId("tableHeaderTitle")
-    .setText("Purchase Register (" + iLength + ")");
 
-that.byId("loadedRowsText")
-    .setText("Loaded: " + iLength);
+                        oBinding = oDataEvent.getSource();
+                        iCount = oBinding.getLength() || 0;
 
-console.log("Rows currently loaded:", iLength);
+                        that.byId("tableHeaderTitle").setText("Purchase Register (" + iCount + ")");
+                        that.byId("loadedRowsText").setText("Loaded: " + iCount);
 
-                        // 3. No Data Validation Check
                         if (iCount === 0) {
                             MessageBox.information("No records found for the selected criteria.", {
                                 title: "No Data Found",
@@ -402,26 +410,216 @@ console.log("Rows currently loaded:", iLength);
             });
         },
 
-        onClear: function (oEvent) {
+        onTableSettings: function () {
+            if (!this._oSettingsDialog) {
+                this._createSettingsDialog();
+            }
+
+            this._syncSettingsDialog();
+            this._oSettingsDialog.open();
+        },
+
+        _createSettingsDialog: function () {
             var that = this;
 
+            this._oColumnVisibilityList = new List({
+                mode: "MultiSelect",
+                includeItemInSelection: true
+            });
+
+            this._oColumnOrderList = new List({
+                mode: "SingleSelectMaster",
+                includeItemInSelection: true
+            });
+
+            this._oSortSelect = new Select({
+                width: "100%",
+                items: this._aExportColumns.map(function (oCol) {
+                    return new Item({
+                        key: oCol.property,
+                        text: oCol.label
+                    });
+                })
+            });
+
+            this._oSortDirectionSelect = new Select({
+                width: "100%",
+                items: [
+                    new Item({ key: "asc", text: "Ascending" }),
+                    new Item({ key: "desc", text: "Descending" })
+                ]
+            });
+
+            this._oSettingsDialog = new Dialog({
+                title: "Table Settings",
+                contentWidth: "600px",
+                contentHeight: "650px",
+                verticalScrolling: true,
+                content: [
+                    new VBox({
+                        width: "100%",
+                        renderType: "Bare",
+                        items: [
+                            new Title({ text: "Columns", level: "H3" }).addStyleClass("sapUiSmallMargin"),
+                            this._oColumnVisibilityList,
+                            new Title({ text: "Column Order", level: "H3" }).addStyleClass("sapUiSmallMargin"),
+                            new HBox({
+                                renderType: "Bare",
+                                items: [
+                                    new Button({
+                                        text: "Move Up",
+                                        press: function () {
+                                            that._moveSelectedColumn(-1);
+                                        }
+                                    }).addStyleClass("sapUiTinyMarginEnd"),
+                                    new Button({
+                                        text: "Move Down",
+                                        press: function () {
+                                            that._moveSelectedColumn(1);
+                                        }
+                                    })
+                                ]
+                            }).addStyleClass("sapUiSmallMarginBeginEnd sapUiTinyMarginBottom"),
+                            this._oColumnOrderList,
+                            new Title({ text: "Sorting", level: "H3" }).addStyleClass("sapUiSmallMargin"),
+                            new VBox({
+                                renderType: "Bare",
+                                items: [
+                                    new Label({ text: "Column" }),
+                                    this._oSortSelect,
+                                    new Label({ text: "Direction" }).addStyleClass("sapUiSmallMarginTop"),
+                                    this._oSortDirectionSelect
+                                ]
+                            }).addStyleClass("sapUiSmallMarginBeginEnd sapUiSmallMarginBottom")
+                        ]
+                    })
+                ],
+                beginButton: new Button({
+                    text: "Apply",
+                    press: function () {
+                        that._applySettings();
+                        that._oSettingsDialog.close();
+                    }
+                }),
+                endButton: new Button({
+                    text: "Cancel",
+                    press: function () {
+                        that._oSettingsDialog.close();
+                    }
+                })
+            });
+
+            this.getView().addDependent(this._oSettingsDialog);
+        },
+
+        _syncSettingsDialog: function () {
+            var oTable = this.byId("purchaseRegisterTable");
+            var aColumns = oTable.getColumns();
+
+            this._oColumnVisibilityList.destroyItems();
+            this._oColumnOrderList.destroyItems();
+
+            aColumns.forEach(function (oColumn) {
+                var sKey = oColumn.data("columnKey");
+                var sText = oColumn.getLabel().getText();
+
+                this._oColumnVisibilityList.addItem(new StandardListItem({
+                    title: sText,
+                    selected: oColumn.getVisible()
+                }).data("columnKey", sKey));
+
+                this._oColumnOrderList.addItem(new StandardListItem({
+                    title: sText,
+                    type: "Active"
+                }).data("columnKey", sKey));
+            }, this);
+        },
+
+        _moveSelectedColumn: function (iDirection) {
+            var oSelectedItem = this._oColumnOrderList.getSelectedItem();
+            var iCurrentIndex;
+            var iNewIndex;
+
+            if (!oSelectedItem) {
+                MessageBox.information("Please select a column to move.", {
+                    title: "Column Order"
+                });
+                return;
+            }
+
+            iCurrentIndex = this._oColumnOrderList.indexOfItem(oSelectedItem);
+            iNewIndex = iCurrentIndex + iDirection;
+
+            if (iNewIndex < 0 || iNewIndex >= this._oColumnOrderList.getItems().length) {
+                return;
+            }
+
+            this._oColumnOrderList.removeItem(oSelectedItem);
+            this._oColumnOrderList.insertItem(oSelectedItem, iNewIndex);
+            this._oColumnOrderList.setSelectedItem(oSelectedItem);
+        },
+
+        _applySettings: function () {
+            var oTable = this.byId("purchaseRegisterTable");
+            var mColumnsByKey = {};
+            var sSortKey = this._oSortSelect.getSelectedKey();
+            var bDescending = this._oSortDirectionSelect.getSelectedKey() === "desc";
+            var oBinding;
+
+            oTable.getColumns().forEach(function (oColumn) {
+                mColumnsByKey[oColumn.data("columnKey")] = oColumn;
+            });
+
+            this._oColumnVisibilityList.getItems().forEach(function (oItem) {
+                var oColumn = mColumnsByKey[oItem.data("columnKey")];
+
+                if (oColumn) {
+                    oColumn.setVisible(oItem.getSelected());
+                }
+            });
+
+            this._oColumnOrderList.getItems().forEach(function (oItem, iIndex) {
+                var oColumn = mColumnsByKey[oItem.data("columnKey")];
+
+                if (oColumn) {
+                    oTable.removeColumn(oColumn);
+                    oTable.insertColumn(oColumn, iIndex);
+                }
+            });
+
+            oBinding = oTable.getBinding("rows");
+            if (oBinding && sSortKey) {
+                oBinding.sort(new Sorter(sSortKey, bDescending));
+            }
+        },
+
+        onClear: function () {
+            var that = this;
             var oDateFrom = this.byId("filterPoDateFrom");
             var oDateTo = this.byId("filterPoDateTo");
-            if (oDateFrom) oDateFrom.setValue(null);
-            if (oDateTo) oDateTo.setValue(null);
+            var oTable;
 
-            var aMultiInputIds = ["filterPr", "filterPrDate", "filterPo", "filterMaterial", "filterPlant", "filterGateEntry"];
-            aMultiInputIds.forEach(function (sId) {
+            if (oDateFrom) {
+                oDateFrom.setValue(null);
+            }
+
+            if (oDateTo) {
+                oDateTo.setValue(null);
+            }
+
+            ["filterPr", "filterPrDate", "filterPo", "filterMaterial", "filterPlant", "filterGateEntry"].forEach(function (sId) {
                 var oMultiInput = that.byId(sId);
+
                 if (oMultiInput) {
                     oMultiInput.setValue("");
                     oMultiInput.setTokens([]);
                 }
             });
 
-            // Blur table on clear as well, prompting user to click Go
-            var oTable = this.byId("purchaseRegisterTable");
-            if (oTable) oTable.setShowOverlay(true);
+            oTable = this.byId("purchaseRegisterTable");
+            if (oTable) {
+                oTable.setShowOverlay(true);
+            }
         },
 
         onValueHelpRequest: function (oEvent) {
@@ -435,22 +633,16 @@ console.log("Rows currently loaded:", iLength);
                 "sap/ui/model/type/String",
                 "sap/ui/model/type/Date"
             ], function (ValueHelpDialog, TypeString, TypeDate) {
-
                 var oValueHelpDialog = new ValueHelpDialog({
-                    // title: "Define Conditions: " + sTitle,
                     title: sTitle,
                     supportMultiselect: true,
                     supportRanges: true,
                     supportRangesOnly: true,
                     key: "ConditionKey",
                     descriptionKey: sTitle,
-
                     ok: function (oControlEvent) {
-                        var aTokens = oControlEvent.getParameter("tokens");
-                        oMultiInput.setTokens(aTokens);
+                        oMultiInput.setTokens(oControlEvent.getParameter("tokens"));
                         oValueHelpDialog.close();
-
-                        // Fire the filter change overlay manually for value helps
                         that.onFilterChange();
                     },
                     cancel: function () {
@@ -460,10 +652,8 @@ console.log("Rows currently loaded:", iLength);
                         oValueHelpDialog.destroy();
                     }
                 });
+                var oTypeInstance;
 
-                // ====== ADD THIS NEW BLOCK HERE ======
-                // If it is a string field, force "EQ" (equal to) to be the first/default operation, 
-                // followed by the rest of the standard string operations.
                 if (sFieldType === "string") {
                     oValueHelpDialog.setIncludeRangeOperations([
                         FilterOperator.EQ,
@@ -477,12 +667,10 @@ console.log("Rows currently loaded:", iLength);
                         FilterOperator.GE
                     ], "string");
                 }
-                // =====================================
 
-                var oTypeInstance;
                 if (sFieldType === "date") {
                     oTypeInstance = new TypeDate({
-                        pattern: "dd.MM.yyyy" // Changed from yyyy-MM-dd to the UI standard
+                        pattern: "dd.MM.yyyy"
                     });
                 } else {
                     oTypeInstance = new TypeString();

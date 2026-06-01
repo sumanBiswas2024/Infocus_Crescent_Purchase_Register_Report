@@ -225,7 +225,8 @@
     id="purchaseRegisterTable"
     selectionMode="MultiToggle"
     threshold="100"
-    rowActionCount="1">
+    rowActionCount="1"
+    visibleRowCount="Auto">
 
     <ui:rowMode>
         <rowmodes:Auto
@@ -255,6 +256,7 @@
                 press=".onExportExcel"
             />
             <Button
+                 id="settingsButton"
                 icon="sap-icon://action-settings"
                 tooltip="Settings"
                 press=".onTableSettings"

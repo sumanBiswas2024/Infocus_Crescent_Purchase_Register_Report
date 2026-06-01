@@ -32,7 +32,12 @@ sap.ui.define([
     "sap/ui/core/Item",
     "sap/m/VBox",
     "sap/m/HBox",
-    "sap/m/Title"
+    "sap/m/Title",
+    "sap/m/IconTabBar",
+    "sap/m/IconTabFilter",
+    "sap/m/SearchField",
+    "sap/m/Toolbar",
+    "sap/m/ToolbarSpacer"
 ], function (
     Controller,
     Filter,
@@ -54,7 +59,12 @@ sap.ui.define([
     Item,
     VBox,
     HBox,
-    Title
+    Title,
+    IconTabBar,
+    IconTabFilter,
+    SearchField,
+    Toolbar,
+    ToolbarSpacer
 ) {
     "use strict";
 
@@ -422,14 +432,26 @@ sap.ui.define([
         _createSettingsDialog: function () {
             var that = this;
 
+            this._oColumnSearchField = new SearchField({
+                width: "100%",
+                placeholder: "Search columns",
+                liveChange: function (oEvent) {
+                    that._filterSettingsLists(oEvent.getParameter("newValue"));
+                }
+            }).addStyleClass("sapUiSmallMarginBottom");
+
             this._oColumnVisibilityList = new List({
                 mode: "MultiSelect",
-                includeItemInSelection: true
+                includeItemInSelection: true,
+                growing: true,
+                growingThreshold: 20
             });
 
             this._oColumnOrderList = new List({
                 mode: "SingleSelectMaster",
-                includeItemInSelection: true
+                includeItemInSelection: true,
+                growing: true,
+                growingThreshold: 20
             });
 
             this._oSortSelect = new Select({
@@ -453,49 +475,82 @@ sap.ui.define([
             this._oSettingsDialog = new Dialog({
                 title: "Table Settings",
                 contentWidth: "600px",
-                contentHeight: "650px",
+                contentHeight: "560px",
                 verticalScrolling: true,
                 content: [
-                    new VBox({
-                        width: "100%",
-                        renderType: "Bare",
+                    new IconTabBar({
+                        expandable: false,
+                        headerBackgroundDesign: "Transparent",
                         items: [
-                            new Title({ text: "Columns", level: "H3" }).addStyleClass("sapUiSmallMargin"),
-                            this._oColumnVisibilityList,
-                            new Title({ text: "Column Order", level: "H3" }).addStyleClass("sapUiSmallMargin"),
-                            new HBox({
-                                renderType: "Bare",
-                                items: [
-                                    new Button({
-                                        text: "Move Up",
-                                        press: function () {
-                                            that._moveSelectedColumn(-1);
-                                        }
-                                    }).addStyleClass("sapUiTinyMarginEnd"),
-                                    new Button({
-                                        text: "Move Down",
-                                        press: function () {
-                                            that._moveSelectedColumn(1);
-                                        }
-                                    })
+                            new IconTabFilter({
+                                text: "Columns",
+                                icon: "sap-icon://table-column",
+                                content: [
+                                    new VBox({
+                                        renderType: "Bare",
+                                        items: [
+                                            new Title({ text: "Show or hide columns", level: "H4" }).addStyleClass("sapUiSmallMarginBottom"),
+                                            this._oColumnSearchField,
+                                            this._oColumnVisibilityList
+                                        ]
+                                    }).addStyleClass("sapUiSmallMargin")
                                 ]
-                            }).addStyleClass("sapUiSmallMarginBeginEnd sapUiTinyMarginBottom"),
-                            this._oColumnOrderList,
-                            new Title({ text: "Sorting", level: "H3" }).addStyleClass("sapUiSmallMargin"),
-                            new VBox({
-                                renderType: "Bare",
-                                items: [
-                                    new Label({ text: "Column" }),
-                                    this._oSortSelect,
-                                    new Label({ text: "Direction" }).addStyleClass("sapUiSmallMarginTop"),
-                                    this._oSortDirectionSelect
+                            }),
+                            new IconTabFilter({
+                                text: "Order",
+                                icon: "sap-icon://sort",
+                                content: [
+                                    new VBox({
+                                        renderType: "Bare",
+                                        items: [
+                                            new Title({ text: "Arrange visible table columns", level: "H4" }),
+                                            new Toolbar({
+                                                design: "Transparent",
+                                                content: [
+                                                    new ToolbarSpacer(),
+                                                    new Button({
+                                                        icon: "sap-icon://navigation-up-arrow",
+                                                        tooltip: "Move selected column up",
+                                                        press: function () {
+                                                            that._moveSelectedColumn(-1);
+                                                        }
+                                                    }),
+                                                    new Button({
+                                                        icon: "sap-icon://navigation-down-arrow",
+                                                        tooltip: "Move selected column down",
+                                                        press: function () {
+                                                            that._moveSelectedColumn(1);
+                                                        }
+                                                    })
+                                                ]
+                                            }),
+                                            this._oColumnOrderList
+                                        ]
+                                    }).addStyleClass("sapUiSmallMargin")
                                 ]
-                            }).addStyleClass("sapUiSmallMarginBeginEnd sapUiSmallMarginBottom")
+                            }),
+                            new IconTabFilter({
+                                text: "Sorting",
+                                icon: "sap-icon://sort-ascending",
+                                content: [
+                                    new VBox({
+                                        renderType: "Bare",
+                                        items: [
+                                            new Title({ text: "Default sort for the report", level: "H4" }).addStyleClass("sapUiSmallMarginBottom"),
+                                            new Label({ text: "Column" }),
+                                            this._oSortSelect,
+                                            new Label({ text: "Direction" }).addStyleClass("sapUiSmallMarginTop"),
+                                            this._oSortDirectionSelect
+                                        ]
+                                    }).addStyleClass("sapUiSmallMargin")
+                                ]
+                            })
                         ]
                     })
                 ],
                 beginButton: new Button({
                     text: "Apply",
+                    type: "Emphasized",
                     press: function () {
                         that._applySettings();
                         that._oSettingsDialog.close();
@@ -518,6 +573,7 @@ sap.ui.define([
 
             this._oColumnVisibilityList.destroyItems();
             this._oColumnOrderList.destroyItems();
+            this._oColumnSearchField.setValue("");
 
             aColumns.forEach(function (oColumn) {
                 var sKey = oColumn.data("columnKey");
@@ -533,6 +589,16 @@ sap.ui.define([
                     type: "Active"
                 }).data("columnKey", sKey));
             }, this);
+        },
+
+        _filterSettingsLists: function (sQuery) {
+            var sNormalizedQuery = (sQuery || "").toLowerCase();
+
+            [this._oColumnVisibilityList, this._oColumnOrderList].forEach(function (oList) {
+                oList.getItems().forEach(function (oItem) {
+                    oItem.setVisible(oItem.getTitle().toLowerCase().indexOf(sNormalizedQuery) !== -1);
+                });
+            });
         },
 
         _moveSelectedColumn: function (iDirection) {

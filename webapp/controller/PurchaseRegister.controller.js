@@ -182,21 +182,21 @@ sap.ui.define([
             }
 
             if (!sDateFrom && !sDateTo) {
-                MessageBox.error("Both 'From PO Date' and 'To PO Date' are mandatory parameters.", {
+                MessageBox.error("Both 'From Reporting Date' and 'To Reporting Date' are mandatory parameters.", {
                     title: "Missing Parameters"
                 });
                 return false;
             }
 
             if (!sDateFrom) {
-                MessageBox.error("'From PO Date' is a mandatory parameter.", {
+                MessageBox.error("'From Reporting Date' is a mandatory parameter.", {
                     title: "Missing Parameter"
                 });
                 return false;
             }
 
             if (!sDateTo) {
-                MessageBox.error("'To PO Date' is a mandatory parameter.", {
+                MessageBox.error("'To Reporting Date' is a mandatory parameter.", {
                     title: "Missing Parameter"
                 });
                 return false;
@@ -206,7 +206,7 @@ sap.ui.define([
             oDateTo = oDateToInput.getDateValue();
 
             if (oDateFrom && oDateTo && oDateFrom > oDateTo) {
-                MessageBox.error("'From PO Date' cannot be after 'To PO Date'.", {
+                MessageBox.error("'From Reporting Date' cannot be after 'To Reporting Date'.", {
                     title: "Invalid Date Range"
                 });
                 return false;

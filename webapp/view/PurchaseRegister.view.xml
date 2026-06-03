@@ -68,7 +68,7 @@
                         <fb:FilterGroupItem
                             groupName="G1"
                             name="PoDateFrom"
-                            label="From PO Date:"
+                            label="From Reporting Date:"
                             visibleInFilterBar="true"
                             mandatory="true"
                         >
@@ -86,7 +86,7 @@
                         <fb:FilterGroupItem
                             groupName="G1"
                             name="PoDateTo"
-                            label="To PO Date:"
+                            label="To Reporting Date:"
                             visibleInFilterBar="true"
                             mandatory="true"
                         >
